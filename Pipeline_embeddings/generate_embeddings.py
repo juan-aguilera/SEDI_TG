@@ -2,15 +2,15 @@
 generate_embeddings.py
 ─────────────────────────────────────────────────────────────────────
 Etapa 1 del pipeline de embeddings para el grafo de conocimiento de HFH.
-
+ 
 Flujo:
   1. Extrae nodos de Neo4j por lotes (paginado con SKIP/LIMIT).
   2. Construye un texto representativo por nodo.
   3. Llama a Azure OpenAI (text-embedding-3-small) en batches con reintentos.
   4. Persiste los vectores en parquet (CHECKPOINT reanudable).
-
+ 
 Despues de esto, usa load_to_neo4j.py para escribir los vectores al grafo.
-
+ 
 Uso:
     python generate_embeddings.py --label Model
     python generate_embeddings.py --label all
@@ -20,7 +20,7 @@ import os
 import time
 import argparse
 from pathlib import Path
-
+ 
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
@@ -28,9 +28,9 @@ from tqdm import tqdm
 from neo4j import GraphDatabase
 from openai import AzureOpenAI
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
-
+ 
 load_dotenv()
-
+ 
 # ════════════════════════════════════════════════════════════════════
 # CONFIGURACION DE NODOS
 # ────────────────────────────────────────────────────────────────────
@@ -48,38 +48,38 @@ NODE_CONFIG = {
     },
     "Dataset": {
         "id_key": "dataset_id",
-        "text_props": ["dataset_id", "tags", "description"],
+        "text_props": ["dataset_id", "citation", "description"],
         "prefix": "dataset",
     },
     "Space": {
         "id_key": "space_id",
-        "text_props": ["space_id", "sdk", "title", "description"],
-        "prefix": "space (aplicacion demo)",
+        "text_props": ["space_id", "sdk", "hardware"],
+        "prefix": "space",
     },
     "Repository": {
         "id_key": "id",
-        "text_props": ["id", "description"],
-        "prefix": "repositorio",
+        "text_props": ["id","name","card_data"],
+        "prefix": "repository",
     },
     "Author": {
         "id_key": "username",
         "text_props": ["username", "fullname"],
-        "prefix": "autor",
+        "prefix": "author",
     },
     "Tag": {
         "id_key": "name",
         "text_props": ["name"],
-        "prefix": "etiqueta",
+        "prefix": "tag",
     },
 }
-
+ 
 # ── Parametros operativos ───────────────────────────────────────────
 FETCH_PAGE_SIZE = 5000      # cuantos nodos traer de Neo4j por consulta
 EMBED_BATCH_SIZE = 256      # cuantos textos mandar a Azure por request
 MAX_CHARS = 8000            # truncado defensivo por texto (evita pasar el limite de tokens)
 OUTPUT_DIR = Path("embeddings_out")
 OUTPUT_DIR.mkdir(exist_ok=True)
-
+ 
 # ── Clientes ────────────────────────────────────────────────────────
 azure_client = AzureOpenAI(
     azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
@@ -87,14 +87,14 @@ azure_client = AzureOpenAI(
     api_version=os.environ["AZURE_OPENAI_API_VERSION"],
 )
 EMBED_DEPLOYMENT = os.environ["AZURE_EMBEDDING_DEPLOYMENT"]
-
+ 
 neo4j_driver = GraphDatabase.driver(
     os.environ["NEO4J_URI"],
     auth=(os.environ["NEO4J_USER"], os.environ["NEO4J_PASSWORD"]),
 )
 NEO4J_DB = os.environ.get("NEO4J_DATABASE", "neo4j")
-
-
+ 
+ 
 # ════════════════════════════════════════════════════════════════════
 # 1. CONSTRUCCION DEL TEXTO POR NODO
 # ════════════════════════════════════════════════════════════════════
@@ -110,8 +110,8 @@ def build_text(record: dict, cfg: dict) -> str:
             parts.append(f"{prop}: {val}")
     text = " | ".join(parts)
     return text[:MAX_CHARS]
-
-
+ 
+ 
 # ════════════════════════════════════════════════════════════════════
 # 2. EXTRACCION DE NODOS DESDE NEO4J (paginada)
 # ════════════════════════════════════════════════════════════════════
@@ -119,8 +119,8 @@ def count_nodes(label: str) -> int:
     with neo4j_driver.session(database=NEO4J_DB) as session:
         res = session.run(f"MATCH (n:`{label}`) RETURN count(n) AS c")
         return res.single()["c"]
-
-
+ 
+ 
 def fetch_nodes(label: str, cfg: dict, skip: int, limit: int):
     """Trae un lote de nodos con su id y propiedades de texto."""
     props = set([cfg["id_key"]] + cfg["text_props"])
@@ -134,8 +134,8 @@ def fetch_nodes(label: str, cfg: dict, skip: int, limit: int):
     with neo4j_driver.session(database=NEO4J_DB) as session:
         result = session.run(query, skip=skip, limit=limit)
         return [dict(r) for r in result]
-
-
+ 
+ 
 # ════════════════════════════════════════════════════════════════════
 # 3. LLAMADA A AZURE OPENAI (con reintentos y backoff)
 # ════════════════════════════════════════════════════════════════════
@@ -151,45 +151,45 @@ def embed_batch(texts: list[str]) -> list[list[float]]:
     safe = [t if t.strip() else "sin informacion" for t in texts]
     resp = azure_client.embeddings.create(model=EMBED_DEPLOYMENT, input=safe)
     return [d.embedding for d in resp.data]
-
-
+ 
+ 
 # ════════════════════════════════════════════════════════════════════
 # 4. PROCESAMIENTO DE UNA ETIQUETA COMPLETA (con checkpoint)
 # ════════════════════════════════════════════════════════════════════
 def process_label(label: str):
     cfg = NODE_CONFIG[label]
     out_path = OUTPUT_DIR / f"embeddings_{label}.parquet"
-
+ 
     # ── Reanudacion: si ya existe parquet, saltamos los ids ya hechos ──
     done_eids = set()
     if out_path.exists():
         existing = pd.read_parquet(out_path, columns=["_eid"])
         done_eids = set(existing["_eid"].tolist())
         print(f"[{label}] checkpoint encontrado: {len(done_eids):,} nodos ya procesados.")
-
+ 
     total = count_nodes(label)
     print(f"[{label}] total de nodos: {total:,}")
-
+ 
     buffer_rows = []          # acumula filas antes de volcarlas a disco
     pbar = tqdm(total=total, desc=label, unit="nodo")
     pbar.update(len(done_eids))
-
+ 
     skip = 0
     while skip < total:
         page = fetch_nodes(label, cfg, skip, FETCH_PAGE_SIZE)
         skip += FETCH_PAGE_SIZE
         if not page:
             break
-
+ 
         # filtra los ya procesados
         page = [r for r in page if r["_eid"] not in done_eids]
         if not page:
             continue
-
+ 
         # construye textos
         for r in page:
             r["_text"] = build_text(r, cfg)
-
+ 
         # embebe en sub-batches
         for i in range(0, len(page), EMBED_BATCH_SIZE):
             chunk = page[i : i + EMBED_BATCH_SIZE]
@@ -203,19 +203,19 @@ def process_label(label: str):
                     "embedding": np.asarray(vec, dtype=np.float32),
                 })
             pbar.update(len(chunk))
-
+ 
         # ── volcado periodico a disco (checkpoint) ──
         if len(buffer_rows) >= 20000:
             _flush(buffer_rows, out_path)
             buffer_rows = []
-
+ 
     if buffer_rows:
         _flush(buffer_rows, out_path)
-
+ 
     pbar.close()
     print(f"[{label}] LISTO -> {out_path}")
-
-
+ 
+ 
 def _flush(rows: list[dict], out_path: Path):
     """Anexa filas al parquet existente (append-safe)."""
     df_new = pd.DataFrame(rows)
@@ -225,8 +225,8 @@ def _flush(rows: list[dict], out_path: Path):
     else:
         df = df_new
     df.to_parquet(out_path, index=False)
-
-
+ 
+ 
 # ════════════════════════════════════════════════════════════════════
 # MAIN
 # ════════════════════════════════════════════════════════════════════
@@ -238,20 +238,21 @@ def main():
         help="Etiqueta a procesar (Model, Dataset, Space, Repository, Author, Tag) o 'all'.",
     )
     args = parser.parse_args()
-
+ 
     if args.label == "all":
         labels = list(NODE_CONFIG.keys())
     else:
         if args.label not in NODE_CONFIG:
             raise SystemExit(f"Etiqueta desconocida. Opciones: {list(NODE_CONFIG)} o 'all'.")
         labels = [args.label]
-
+ 
     start = time.time()
     for lbl in labels:
         process_label(lbl)
     print(f"\nTiempo total: {(time.time() - start) / 60:.1f} min")
     neo4j_driver.close()
-
-
+ 
+ 
 if __name__ == "__main__":
     main()
+ 
