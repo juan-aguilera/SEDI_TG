@@ -27,6 +27,7 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 from neo4j import GraphDatabase
 from openai import AzureOpenAI
+from openai import RateLimitError, APIConnectionError, APITimeoutError, InternalServerError
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
  
 load_dotenv()
@@ -75,8 +76,9 @@ NODE_CONFIG = {
  
 # ── Parametros operativos ───────────────────────────────────────────
 FETCH_PAGE_SIZE = 5000      # cuantos nodos traer de Neo4j por consulta
-EMBED_BATCH_SIZE = 256      # cuantos textos mandar a Azure por request
+EMBED_BATCH_SIZE = 16       # cuantos textos mandar a Azure por request (bajo por el tier S0)
 MAX_CHARS = 8000            # truncado defensivo por texto (evita pasar el limite de tokens)
+THROTTLE_SECONDS = 1.0      # pausa entre requests para no saturar el rate limit por minuto
 OUTPUT_DIR = Path("embeddings_out")
 OUTPUT_DIR.mkdir(exist_ok=True)
  
@@ -140,9 +142,13 @@ def fetch_nodes(label: str, cfg: dict, skip: int, limit: int):
 # 3. LLAMADA A AZURE OPENAI (con reintentos y backoff)
 # ════════════════════════════════════════════════════════════════════
 @retry(
-    wait=wait_exponential(multiplier=2, min=4, max=120),
-    stop=stop_after_attempt(8),
-    retry=retry_if_exception_type(Exception),
+    # espera hasta 90s entre intentos (Azure pide ~60s tras un 429)
+    wait=wait_exponential(multiplier=2, min=5, max=90),
+    stop=stop_after_attempt(12),
+    # solo reintenta ante errores transitorios (rate limit, conexion, timeout, 5xx)
+    retry=retry_if_exception_type(
+        (RateLimitError, APIConnectionError, APITimeoutError, InternalServerError)
+    ),
     reraise=True,
 )
 def embed_batch(texts: list[str]) -> list[list[float]]:
@@ -150,6 +156,7 @@ def embed_batch(texts: list[str]) -> list[list[float]]:
     # text-embedding-3 no acepta strings vacios -> sustituye por un placeholder
     safe = [t if t.strip() else "sin informacion" for t in texts]
     resp = azure_client.embeddings.create(model=EMBED_DEPLOYMENT, input=safe)
+    time.sleep(THROTTLE_SECONDS)  # throttle: no dispares el siguiente request de inmediato
     return [d.embedding for d in resp.data]
  
  
