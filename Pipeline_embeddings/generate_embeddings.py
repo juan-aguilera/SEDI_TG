@@ -44,8 +44,8 @@ load_dotenv()
 NODE_CONFIG = {
     "Model": {
         "id_key": "model_id",
-        "text_props": ["model_id", "pipeline_tag", "tags", "description"],
-        "prefix": "modelo de machine learning",
+        "text_props": ["model_id", "pipeline_tag", "config"],
+        "prefix": "modelo",
     },
     "Dataset": {
         "id_key": "dataset_id",
@@ -76,9 +76,9 @@ NODE_CONFIG = {
  
 # ── Parametros operativos ───────────────────────────────────────────
 FETCH_PAGE_SIZE = 5000      # cuantos nodos traer de Neo4j por consulta
-EMBED_BATCH_SIZE = 16       # cuantos textos mandar a Azure por request (bajo por el tier S0)
+EMBED_BATCH_SIZE = 128       # cuantos textos mandar a Azure por request
 MAX_CHARS = 8000            # truncado defensivo por texto (evita pasar el limite de tokens)
-THROTTLE_SECONDS = 1.0      # pausa entre requests para no saturar el rate limit por minuto
+THROTTLE_SECONDS = 0.6      # pausa entre requests para no saturar el rate limit por minuto
 OUTPUT_DIR = Path("embeddings_out")
 OUTPUT_DIR.mkdir(exist_ok=True)
  
@@ -212,7 +212,7 @@ def process_label(label: str):
             pbar.update(len(chunk))
  
         # ── volcado periodico a disco (checkpoint) ──
-        if len(buffer_rows) >= 20000:
+        if len(buffer_rows) >= 10000:
             _flush(buffer_rows, out_path)
             buffer_rows = []
  

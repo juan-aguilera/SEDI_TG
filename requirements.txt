@@ -1,0 +1,16 @@
+# Dependencias consolidadas del proyecto (Pipeline_embeddings + Pipeline_RAG)
+
+# ── Pipeline de embeddings (Etapa 1 y 2) ────────────────────────────
+openai>=1.30.0
+neo4j>=5.20.0
+pandas>=2.0.0
+pyarrow>=14.0.0
+numpy>=1.24.0
+tenacity>=8.2.0
+python-dotenv>=1.0.0
+tqdm>=4.66.0
+
+# ── Capa GraphRAG (Pipeline_RAG) ────────────────────────────────────
+langchain
+langgraph
+pydantic
