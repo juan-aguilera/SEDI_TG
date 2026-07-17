@@ -2,8 +2,7 @@
 import os
 import openai
 from langchain_openai import ChatOpenAI
-from langchain.chains import RetrievalQA, GraphCypherQAChain
-from langchain_community.graphs import Neo4jGraph
+from langchain_neo4j import Neo4jGraph, GraphCypherQAChain
 
 # Import Custom Libraries
 from Prompts.prompt_template import create_few_shot_prompt, create_few_shot_prompt_with_context
@@ -38,6 +37,7 @@ def get_graph_qa_chain(state: GraphState):
             cypher_prompt = prompt,
             # return_intermediate_steps = True,
             return_direct = True,
+            allow_dangerous_requests = True,  # requerido por langchain-neo4j: reconoce que Cypher generado por el LLM se ejecuta directo contra la BD
         )
     return graph_qa_chain
 
@@ -56,5 +56,6 @@ def get_graph_qa_chain_with_context(state: GraphState):
             cypher_prompt = prompt_with_context,
             # return_intermediate_steps = True,
             return_direct = True,
+            allow_dangerous_requests = True,  # requerido por langchain-neo4j: reconoce que Cypher generado por el LLM se ejecuta directo contra la BD
         )
     return graph_qa_chain

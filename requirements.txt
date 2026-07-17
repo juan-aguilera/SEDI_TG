@@ -10,7 +10,16 @@ tenacity>=8.2.0
 python-dotenv>=1.0.0
 tqdm>=4.66.0
 
-# ── Capa GraphRAG (Pipeline_RAG) ────────────────────────────────────
-langchain
-langgraph
+# ── Capa GraphRAG (Pipeline_RAG) — LangChain 1.x ────────────────────
+# El codigo esta migrado a las APIs de la serie 1.x (Neo4jGraph, GraphCypherQAChain
+# y Neo4jVector viven ahora en langchain-neo4j; Chroma en langchain-chroma;
+# RetrievalQA en langchain-classic; ya no se usa langchain-community).
+langchain>=1.0,<2.0
+langchain-core>=1.0,<2.0
+langchain-openai>=1.0,<2.0
+langchain-neo4j>=0.10,<1.0
+langchain-chroma>=1.0,<2.0
+langchain-classic>=1.0,<2.0
+langgraph>=1.0,<2.0
 pydantic
+chromadb

@@ -1,6 +1,6 @@
 import os
 import openai
-from langchain.vectorstores import Neo4jVector
+from langchain_neo4j import Neo4jVector
 from langchain_openai import OpenAIEmbeddings
 #from neo4j import GraphDatabase
 

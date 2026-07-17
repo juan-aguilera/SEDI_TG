@@ -1,6 +1,6 @@
 # Import Python libraries
 import os
-from langchain_community.graphs import Neo4jGraph
+from langchain_neo4j import Neo4jGraph
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 # Import Custom libraries

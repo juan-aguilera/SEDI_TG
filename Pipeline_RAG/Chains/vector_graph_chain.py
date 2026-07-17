@@ -2,7 +2,7 @@
 import os
 import openai
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain.chains import RetrievalQA
+from langchain_classic.chains import RetrievalQA
 
 # Import Custom Libraries
 from Indexes import index
