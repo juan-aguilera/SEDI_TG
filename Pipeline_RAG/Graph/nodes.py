@@ -13,14 +13,16 @@ from Graph.state import GraphState
 from Tools.parse_vector_search import DocumentModel
 
 
-neo4j_url = os.environ.get('AURA_CONNECTION_URI')
-neo4j_user = 'neo4j'
-neo4j_pwd = os.environ.get('AURA_PASSWORD')
+neo4j_url = os.environ.get('NEO4J_URI')
+neo4j_user = os.environ.get('NEO4J_USER')
+neo4j_pwd = os.environ.get('NEO4J_PASSWORD')
+neo4j_db = os.environ.get('NEO4J_DATABASE')
 
 graph = Neo4jGraph(
     url=neo4j_url,
     username=neo4j_user,
-    password=neo4j_pwd
+    password=neo4j_pwd,
+    database=neo4j_db,
 )
 
 llm = ChatOpenAI(
