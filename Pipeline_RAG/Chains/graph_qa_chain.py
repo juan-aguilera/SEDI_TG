@@ -82,7 +82,7 @@ def get_graph_qa_chain_with_context(state: GraphState):
     """
     Arma la misma cadena "pregunta -> Cypher -> respuesta", pero en su
     version CON CONTEXTO: usa un 'prompt_with_context', que ya trae
-    incluida informacion encontrada antes (por ejemplo, ids de articulos
+    incluida informacion encontrada antes (por ejemplo, ids de nodos
     hallados en una busqueda de similitud), para que el Cypher generado
     sea mas preciso. Recibe 'state' para poder leer ese
     'prompt_with_context' ya armado.

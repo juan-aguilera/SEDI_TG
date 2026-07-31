@@ -1,25 +1,20 @@
 # Import Python Libraries
 from pydantic import BaseModel
 from typing import List
-import re
 
 # Import Custom Libraries
 from Graph.state import GraphState
 
-class Metadata(BaseModel):    
-    topics: str
-    article_id: str
+# Metadata de un Document devuelto por el retriever de Indexes/index.py:
+# node_id y label vienen directo del retrieval_query (ya estructurados,
+# no hace falta parsear texto con regex como se hacia antes con article_id/topics).
+class Metadata(BaseModel):
+    node_id: str
+    label: str
 
 class DocumentModel(BaseModel):
     page_content: str
     metadata: Metadata
-
-    def extract_title(self) -> str:
-        # Extract the title from page_content
-        match = re.search(r'title: (.+)', self.page_content)
-        if match:
-            return match.group(1)
-        return ""
 
 class ResultModel(BaseModel):
     documents: List[DocumentModel]

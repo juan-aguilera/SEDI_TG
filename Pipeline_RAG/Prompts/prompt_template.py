@@ -54,8 +54,15 @@ def create_few_shot_prompt_with_context(state: GraphState):
     '''Create a prompt template with context variable. The context variable will be based on the output from vector qa chain'''
     '''The output of vector qa is list of node ids against which to perform graph query'''
     
-    context = state["article_ids"]
-    
+    context = state["context_refs"]
+
+    # NOTA: el prefijo de abajo y los ejemplos few-shot de Prompts/prompt_examples.py
+    # todavia asumen ids estilo OpenAlex ("W...", esquema de articulos). Ahora
+    # `context` trae tuplas (label, node_id) reales del grafo de HF Hub (ej.
+    # ("Model", "bert-base-uncased")), pero el LLM no tiene ejemplos de como usar
+    # esos ids en Cypher contra Model/Dataset/Space. Adaptar el texto y los
+    # ejemplos few-shot al esquema real queda fuera de alcance de este cambio
+    # (ver PLAN_busqueda_vectorial_multilabel.md punto 7 y ARQUITECTURA_Y_WORKFLOW.md).
     prefix = f"""
     Task:Generate Cypher statement to query a graph database.
     Instructions:

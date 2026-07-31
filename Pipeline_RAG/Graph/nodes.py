@@ -51,16 +51,16 @@ def vector_search(state: GraphState):
     
     
     vector_graph_chain = get_vector_graph_chain()
-    
+
     chain_result = vector_graph_chain.invoke({
         "query": queries[0].sub_query},
     )
     # Convert the result to a list of DocumentModel instances
     documents = [DocumentModel(**doc.dict()) for doc in chain_result['source_documents']]
-    extracted_data = [{"title": doc.extract_title(), "article_id": doc.metadata.article_id} for doc in documents]
-    article_ids = [("article_id", doc.metadata.article_id) for doc in documents]
-    
-    return {"article_ids": article_ids, "documents": extracted_data, "question":question, "subqueries": queries}
+    extracted_data = [{"label": doc.metadata.label, "node_id": doc.metadata.node_id} for doc in documents]
+    context_refs = [(doc.metadata.label, doc.metadata.node_id) for doc in documents]
+
+    return {"context_refs": context_refs, "documents": extracted_data, "question":question, "subqueries": queries}
 
 
 def  prompt_template(state: GraphState):
