@@ -4,11 +4,17 @@ from langchain_chroma import Chroma
 from langchain_core.prompts import FewShotPromptTemplate, PromptTemplate
 from langchain_core.example_selectors import SemanticSimilarityExampleSelector, MaxMarginalRelevanceExampleSelector
 from Prompts.prompt_examples import examples
+from langchain_openai import AzureOpenAIEmbeddings
 
 # Import Custom Libraries
 from Graph.state import GraphState
 
-EMBEDDING_MODEL = OpenAIEmbeddings(openai_api_key=os.environ.get("OPENAI_API_KEY"))
+EMBEDDING_MODEL = AzureOpenAIEmbeddings(
+        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
+        api_key=os.environ["AZURE_OPENAI_API_KEY"],
+        api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+        azure_deployment=os.environ["AZURE_EMBEDDING_DEPLOYMENT"],
+    )
 
 # Instantiate a example selector
 example_selector = MaxMarginalRelevanceExampleSelector.from_examples(

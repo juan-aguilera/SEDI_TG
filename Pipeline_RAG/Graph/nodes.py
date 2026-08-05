@@ -2,6 +2,7 @@
 import os
 from langchain_neo4j import Neo4jGraph
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_openai import AzureChatOpenAI,AzureOpenAIEmbeddings
 
 # Import Custom libraries
 from Chains.vector_graph_chain import get_vector_graph_chain
@@ -25,12 +26,20 @@ graph = Neo4jGraph(
     database=neo4j_db,
 )
 
-llm = ChatOpenAI(
-    model="gpt-3.5-turbo", 
-    temperature=0,
-    api_key=os.environ.get("OPENAI_API_KEY"),
+llm = AzureChatOpenAI(
+
+    azure_deployment=os.environ.get("AZURE_CHAT_DEPLOYMENT"),     # nombre del deployment en Foundry (gpt-5-mini)
+    azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),       # URL base del recurso de Azure OpenAI
+    api_key=os.environ.get("AZURE_OPENAI_API_KEY"),               # clave secreta del recurso de Azure
+    api_version=os.environ.get("AZURE_OPENAI_API_VERSION"),       # version de la API (verificar que soporte gpt-5-mini)
+    temperature=0,                                                # 0 = respuestas estables y predecibles (poca "creatividad")
 )
-EMBEDDING_MODEL = OpenAIEmbeddings(openai_api_key=os.environ.get("OPENAI_API_KEY"))
+
+EMBEDDING_MODEL = AzureOpenAIEmbeddings(
+        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
+        api_key=os.environ["AZURE_OPENAI_API_KEY"],
+        api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+        azure_deployment=os.environ["AZURE_EMBEDDING_DEPLOYMENT"])
 
 def decomposer(state: GraphState):
     
@@ -44,7 +53,7 @@ def decomposer(state: GraphState):
 def vector_search(state: GraphState):
     
     ''' Returns a dictionary of at least one of the GraphState'''
-    ''' Perform a vector similarity search and return article id as a parsed output'''
+    ''' Perform a vector similarity search and return node id as a parsed output'''
 
     question = state["question"]
     queries = state["subqueries"]
