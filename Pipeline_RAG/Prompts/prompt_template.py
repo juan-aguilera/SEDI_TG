@@ -17,11 +17,17 @@ EMBEDDING_MODEL = AzureOpenAIEmbeddings(
     )
 
 # Instantiate a example selector
+# input_keys=["question"]: GraphCypherQAChain llama a select_examples con un dict que
+# ademas de "question" trae "examples" (None) y "schema" (texto largo). Sin input_keys,
+# el selector intenta unir TODOS los valores del dict con " ".join(...) y explota con
+# "TypeError: sequence item 0: expected str instance, NoneType found" apenas "examples"
+# viene en None. Restringir a "question" hace que solo se compare contra la pregunta.
 example_selector = MaxMarginalRelevanceExampleSelector.from_examples(
     examples = examples,
     embeddings = EMBEDDING_MODEL,
     vectorstore_cls = Chroma,
-    k=5,   
+    k=5,
+    input_keys=["question"],
 )
 
 # Configure a formatter

@@ -1,7 +1,7 @@
 examples = [
     {
         "question": "What is the pipeline tag of a specific model, e.g bert-base-uncased?",
-        "query": "MATCH (m:Model {model_id: 'bert-base-uncased'}) RETURN m.model_id, m.pipeline_tag",
+        "query": "MATCH (m:Model) WHERE m.model_id = 'bert-base-uncased' RETURN m.model_id, m.pipeline_tag",
     },
     {
         "question": "Find all models with the pipeline tag 'text-classification'",
@@ -25,23 +25,23 @@ examples = [
     },
     {
         "question": "What are the tags associated with a specific model?",
-        "query": "MATCH (m:Model {model_id: 'bert-base-uncased'})-[:IS_A]->(r:Repository)-[:HAS_TAG]->(t:Tag) RETURN t.name",
+        "query": "MATCH (m:Model)-[:IS_A]->(r:Repository)-[:HAS_TAG]->(t:Tag) WHERE m.model_id = 'bert-base-uncased' RETURN t.name",
     },
     {
         "question": "How many tags does a specific model have?",
-        "query": "MATCH (m:Model {model_id: 'bert-base-uncased'})-[:IS_A]->(r:Repository)-[:HAS_TAG]->(t:Tag) RETURN count(t)",
+        "query": "MATCH (m:Model)-[:IS_A]->(r:Repository)-[:HAS_TAG]->(t:Tag) WHERE m.model_id = 'bert-base-uncased' RETURN count(t)",
     },
     {
         "question": "Which models have the tag 'pytorch'?",
-        "query": "MATCH (t:Tag {name: 'pytorch'})<-[:HAS_TAG]-(r:Repository)<-[:IS_A]-(m:Model) RETURN m.model_id",
+        "query": "MATCH (t:Tag)<-[:HAS_TAG]-(r:Repository)<-[:IS_A]-(m:Model) WHERE t.name = 'pytorch' RETURN m.model_id",
     },
     {
         "question": "How many models are tagged with 'pytorch'?",
-        "query": "MATCH (t:Tag {name: 'pytorch'})<-[:HAS_TAG]-(r:Repository)<-[:IS_A]-(m:Model) RETURN count(m)",
+        "query": "MATCH (t:Tag)<-[:HAS_TAG]-(r:Repository)<-[:IS_A]-(m:Model) WHERE t.name = 'pytorch' RETURN count(m)",
     },
     {
         "question": "Which models have both the tag 'pytorch' and the pipeline tag 'text-classification'?",
-        "query": "MATCH (m:Model)-[:IS_A]->(r:Repository)-[:HAS_TAG]->(t:Tag {name: 'pytorch'}) WHERE m.pipeline_tag = 'text-classification' RETURN m.model_id",
+        "query": "MATCH (m:Model)-[:IS_A]->(r:Repository)-[:HAS_TAG]->(t:Tag) WHERE t.name = 'pytorch' AND m.pipeline_tag = 'text-classification' RETURN m.model_id",
     },
     {
         "question": "What are the top 10 tags with the most models?",
@@ -53,19 +53,19 @@ examples = [
     },
     {
         "question": "Who created a specific model?",
-        "query": "MATCH (m:Model {model_id: 'bert-base-uncased'})-[:IS_A]->(r:Repository)-[:CREATED_BY]->(au:Author) RETURN au.username",
+        "query": "MATCH (m:Model)-[:IS_A]->(r:Repository)-[:CREATED_BY]->(au:Author) WHERE m.model_id = 'bert-base-uncased' RETURN au.username",
     },
     {
         "question": "What is the full name of the author who created a specific model?",
-        "query": "MATCH (m:Model {model_id: 'bert-base-uncased'})-[:IS_A]->(r:Repository)-[:CREATED_BY]->(au:Author) RETURN au.fullname",
+        "query": "MATCH (m:Model)-[:IS_A]->(r:Repository)-[:CREATED_BY]->(au:Author) WHERE m.model_id = 'bert-base-uncased' RETURN au.fullname",
     },
     {
         "question": "What models were created by a specific author, e.g 'google'?",
-        "query": "MATCH (au:Author {username: 'google'})<-[:CREATED_BY]-(r:Repository)<-[:IS_A]-(m:Model) RETURN m.model_id",
+        "query": "MATCH (au:Author)<-[:CREATED_BY]-(r:Repository)<-[:IS_A]-(m:Model) WHERE au.username = 'google' RETURN m.model_id",
     },
     {
         "question": "How many models has a specific author created?",
-        "query": "MATCH (au:Author {username: 'google'})<-[:CREATED_BY]-(r:Repository)<-[:IS_A]-(m:Model) RETURN count(m)",
+        "query": "MATCH (au:Author)<-[:CREATED_BY]-(r:Repository)<-[:IS_A]-(m:Model) WHERE au.username = 'google' RETURN count(m)",
     },
     {
         "question": "Which authors have created the most models?",
@@ -73,23 +73,23 @@ examples = [
     },
     {
         "question": "What is the repository name and id of a specific model?",
-        "query": "MATCH (m:Model {model_id: 'bert-base-uncased'})-[:IS_A]->(r:Repository) RETURN r.name, r.id",
+        "query": "MATCH (m:Model)-[:IS_A]->(r:Repository) WHERE m.model_id = 'bert-base-uncased' RETURN r.name, r.id",
     },
     {
         "question": "Which other models share tags with a specific model?",
-        "query": "MATCH (m1:Model {model_id: 'bert-base-uncased'})-[:IS_A]->(:Repository)-[:HAS_TAG]->(t:Tag)<-[:HAS_TAG]-(:Repository)<-[:IS_A]-(m2:Model) WHERE m1 <> m2 RETURN DISTINCT m2.model_id LIMIT 10",
+        "query": "MATCH (m1:Model)-[:IS_A]->(:Repository)-[:HAS_TAG]->(t:Tag)<-[:HAS_TAG]-(:Repository)<-[:IS_A]-(m2:Model) WHERE m1.model_id = 'bert-base-uncased' AND m1 <> m2 RETURN DISTINCT m2.model_id LIMIT 10",
     },
     {
         "question": "Which other models were created by the same author as a specific model?",
-        "query": "MATCH (m1:Model {model_id: 'bert-base-uncased'})-[:IS_A]->(:Repository)-[:CREATED_BY]->(au:Author)<-[:CREATED_BY]-(:Repository)<-[:IS_A]-(m2:Model) WHERE m1 <> m2 RETURN DISTINCT m2.model_id",
+        "query": "MATCH (m1:Model)-[:IS_A]->(:Repository)-[:CREATED_BY]->(au:Author)<-[:CREATED_BY]-(:Repository)<-[:IS_A]-(m2:Model) WHERE m1.model_id = 'bert-base-uncased' AND m1 <> m2 RETURN DISTINCT m2.model_id",
     },
     {
         "question": "Which Spaces use a specific model?",
-        "query": "MATCH (s:Space)-[:USES_MODEL]->(m:Model {model_id: 'bert-base-uncased'}) RETURN s.space_id",
+        "query": "MATCH (s:Space)-[:USES_MODEL]->(m:Model) WHERE m.model_id = 'bert-base-uncased' RETURN s.space_id",
     },
     {
         "question": "How many Spaces use a specific model?",
-        "query": "MATCH (s:Space)-[:USES_MODEL]->(m:Model {model_id: 'bert-base-uncased'}) RETURN count(s)",
+        "query": "MATCH (s:Space)-[:USES_MODEL]->(m:Model) WHERE m.model_id = 'bert-base-uncased' RETURN count(s)",
     },
     {
         "question": "What are the most used models by Spaces?",
@@ -97,34 +97,34 @@ examples = [
     },
     {
         "question": "Which models are used by Spaces built with the 'gradio' SDK?",
-        "query": "MATCH (s:Space {sdk: 'gradio'})-[:USES_MODEL]->(m:Model) RETURN DISTINCT m.model_id",
+        "query": "MATCH (s:Space)-[:USES_MODEL]->(m:Model) WHERE s.sdk = 'gradio' RETURN DISTINCT m.model_id",
     },
     {
         "question": "List the models used by a specific Space along with their tags",
-        "query": "MATCH (s:Space {space_id: 'huggingface/diffusers-demo'})-[:USES_MODEL]->(m:Model)-[:IS_A]->(r:Repository)-[:HAS_TAG]->(t:Tag) RETURN m.model_id, collect(t.name) AS tags",
+        "query": "MATCH (s:Space)-[:USES_MODEL]->(m:Model)-[:IS_A]->(r:Repository)-[:HAS_TAG]->(t:Tag) WHERE s.space_id = 'huggingface/diffusers-demo' RETURN m.model_id, collect(t.name) AS tags",
     },
     {
         "question": "What discussions exist for a specific model?",
-        "query": "MATCH (m:Model {model_id: 'bert-base-uncased'})-[:IS_A]->(r:Repository)<-[:BELONGS_TO]-(d:Discussion) RETURN d",
+        "query": "MATCH (m:Model)-[:IS_A]->(r:Repository)<-[:BELONGS_TO]-(d:Discussion) WHERE m.model_id = 'bert-base-uncased' RETURN d",
     },
     {
         "question": "How many discussions does a specific model have?",
-        "query": "MATCH (m:Model {model_id: 'bert-base-uncased'})-[:IS_A]->(r:Repository)<-[:BELONGS_TO]-(d:Discussion) RETURN count(d)",
+        "query": "MATCH (m:Model)-[:IS_A]->(r:Repository)<-[:BELONGS_TO]-(d:Discussion) WHERE m.model_id = 'bert-base-uncased' RETURN count(d)",
     },
     {
         "question": "Who opened discussions on a specific model?",
-        "query": "MATCH (m:Model {model_id: 'bert-base-uncased'})-[:IS_A]->(r:Repository)<-[:BELONGS_TO]-(d:Discussion)-[:CREATED_BY]->(au:Author) RETURN DISTINCT au.username",
+        "query": "MATCH (m:Model)-[:IS_A]->(r:Repository)<-[:BELONGS_TO]-(d:Discussion)-[:CREATED_BY]->(au:Author) WHERE m.model_id = 'bert-base-uncased' RETURN DISTINCT au.username",
     },
     {
         "question": "Which files have conflicts in discussions on a specific model?",
-        "query": "MATCH (m:Model {model_id: 'bert-base-uncased'})-[:IS_A]->(r:Repository)<-[c:HAS_CONFLICTING_FILE]-(d:Discussion) RETURN c.filename, c.repo_file_id",
+        "query": "MATCH (m:Model)-[:IS_A]->(r:Repository)<-[c:HAS_CONFLICTING_FILE]-(d:Discussion) WHERE m.model_id = 'bert-base-uncased' RETURN c.filename, c.repo_file_id",
     },
     {
         "question": "What commits has the creator of a specific model authored?",
-        "query": "MATCH (m:Model {model_id: 'bert-base-uncased'})-[:IS_A]->(:Repository)-[:CREATED_BY]->(au:Author)<-[:AUTHORED_BY]-(c:Commits) RETURN c LIMIT 10",
+        "query": "MATCH (m:Model)-[:IS_A]->(:Repository)-[:CREATED_BY]->(au:Author)<-[:AUTHORED_BY]-(c:Commits) WHERE m.model_id = 'bert-base-uncased' RETURN c LIMIT 10",
     },
     {
         "question": "Which files has the creator of a specific model modified in their commits?",
-        "query": "MATCH (m:Model {model_id: 'bert-base-uncased'})-[:IS_A]->(:Repository)-[:CREATED_BY]->(au:Author)<-[:AUTHORED_BY]-(c:Commits)-[:MODIFIES]->(f:ModifiedFile) RETURN DISTINCT f",
+        "query": "MATCH (m:Model)-[:IS_A]->(:Repository)-[:CREATED_BY]->(au:Author)<-[:AUTHORED_BY]-(c:Commits)-[:MODIFIES]->(f:ModifiedFile) WHERE m.model_id = 'bert-base-uncased' RETURN DISTINCT f",
     },
 ]

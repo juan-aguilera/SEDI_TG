@@ -21,7 +21,8 @@ llm = AzureChatOpenAI(
     azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),       # URL base del recurso de Azure OpenAI
     api_key=os.environ.get("AZURE_OPENAI_API_KEY"),               # clave secreta del recurso de Azure
     api_version=os.environ.get("AZURE_OPENAI_API_VERSION"),       # version de la API (verificar que soporte gpt-5-mini)
-    temperature=0,                                                # 0 = respuestas estables y predecibles (poca "creatividad")
+    # temperature no se fija: gpt-5-mini solo acepta el valor por defecto (1);
+    # pasar temperature=0 explicito hace que Azure devuelva un 400 BadRequestError.
 )
 
 
