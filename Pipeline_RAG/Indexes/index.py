@@ -20,11 +20,77 @@ from langchain_openai import AzureOpenAIEmbeddings
 # id_key: propiedad que identifica al nodo (la misma que usa Pipeline_embeddings
 #         en generate_embeddings.py -> NODE_CONFIG).
 # text_props: propiedades que se concatenan como texto para el LLM (page_content).
-# Hoy solo esta wireado el label "Model"; agregar otro label es agregar una
-# entrada aqui (ver PLAN_busqueda_vectorial_multilabel.md para el caso multi-label).
+#         TIENEN que ser las mismas (y en el mismo orden) que uso
+#         generate_embeddings.py para construir el texto que se embebio; si no
+#         coinciden, el texto que ve el LLM no es el que se vectorizo.
+# description: para que sirve este tipo de nodo, en lenguaje natural. NO lo usa
+#         la busqueda vectorial: alimenta el prompt del retriever router
+#         (Chains/retriever_router.py), que decide sobre que label(s) buscar.
+#         Esta es la unica fuente de verdad de esas descripciones - no
+#         duplicarlas dentro del prompt.
+#         OJO: no confundir esta clave con la propiedad de Neo4j llamada
+#         "description" que aparece en los text_props de Dataset; son cosas
+#         distintas y de niveles distintos.
+#
+# Los 6 labels de abajo son exactamente los que tienen embeddings e indice
+# vectorial (`vec_<label>_embedding`) creados por Pipeline_embeddings.
 LABEL_CONFIG = {
-    "Model": {"id_key": "model_id", "text_props": ["model_id", "pipeline_tag", "config"]},
+    "Model": {
+        "id_key": "model_id",
+        "text_props": ["model_id", "pipeline_tag", "config"],
+        "description": (
+            "A pre-trained machine learning model published on the Hugging Face Hub, "
+            "with the task it solves (pipeline tag, e.g. text-classification, "
+            "image-generation) and its architecture configuration."
+        ),
+    },
+    "Dataset": {
+        "id_key": "dataset_id",
+        "text_props": ["dataset_id", "citation", "description"],
+        "description": (
+            "A collection of data published on the Hub, used to train or evaluate "
+            "models, with its description and academic citation."
+        ),
+    },
+    "Space": {
+        "id_key": "space_id",
+        "text_props": ["space_id", "sdk", "hardware"],
+        "description": (
+            "An interactive demo application hosted on the Hub, with the SDK it was "
+            "built with (gradio, streamlit, docker) and the hardware it runs on."
+        ),
+    },
+    "Repository": {
+        "id_key": "id",
+        "text_props": ["id", "name", "card_data"],
+        "description": (
+            "The git repository that backs a model, dataset or space, with its name "
+            "and the metadata of its model card (README)."
+        ),
+    },
+    "Author": {
+        "id_key": "username",
+        "text_props": ["username", "fullname"],
+        "description": (
+            "A user or organization that publishes repositories on the Hub, "
+            "identified by username and full name."
+        ),
+    },
+    "Tag": {
+        "id_key": "name",
+        "text_props": ["name"],
+        "description": (
+            "A free-form keyword attached to repositories to categorize them: task, "
+            "language, license, library or domain."
+        ),
+    },
 }
+
+# Lista de todos los labels con indice vectorial disponible.
+# Se usa como fallback del retriever router: si el router no logra elegir
+# labels (lista vacia, label inventado, o error de la llamada al LLM), se busca
+# en todos - asi nunca se excluye de forma irreversible el label correcto.
+ALL_LABELS = list(LABEL_CONFIG)
 
 
 def _get_embedding_model():
@@ -80,3 +146,12 @@ def get_neo4j_vector_index(label: str = "Model"):
         index_name=f"vec_{label.lower()}_embedding",
         retrieval_query=_build_retrieval_query(label, cfg["id_key"], cfg["text_props"]),
     )
+def multi_label_similarity_search(query,labels,top_k=5):
+    hits = []
+    for label in labels:
+        idx = get_neo4j_vector_index(label)
+        for doc, score in idx.similarity_search_with_score(query, k=top_k):
+            doc.metadata["score"] = score
+            hits.append((score,doc))
+    hits.sort(key=lambda h: h[0], reverse=True)
+    return [doc for _, doc in hits[:top_k]]

@@ -85,8 +85,8 @@ def create_few_shot_prompt_with_context(state: GraphState):
     Do not respond to any questions that might ask anything else than for you to construct a Cypher statement.
     Do not include any text except the generated Cypher statement.
     
-    A context is provided from a vector search in a form of tuple ('a..', 'W..') 
-    Use the second element of the tuple as a node id, e.g 'W..... 
+    A context is provided from a vector search in a form of tuple (label,node_id) where label is the type of node and node_id is the id of the node in the graph.
+    Use the second element of the tuple as a node id to construct the Cypher statement. 
     Here are the contexts: {context}
 
     Using node id from the context above, create cypher statements and use that to query with the graph.

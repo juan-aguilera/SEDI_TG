@@ -74,19 +74,6 @@ Esto reemplaza `vector_index.as_retriever(search_kwargs={'k':3})` en `vector_gra
 - La lista que hoy se llama `article_ids` (tuplas `("article_id", id)`) pasa a `context_refs` (tuplas `(label, node_id)`), reflejando que ya no son solo artículos.
 - Se devuelve `{"context_refs": context_refs, "documents": extracted_data, "question": question, "subqueries": queries}`.
 
-### 6. `Pipeline_RAG/Graph/state.py`
 
-- El campo `article_ids` se usaba en `nodes.py` y `prompt_template.py` pero **nunca estuvo declarado** en el `GraphState` TypedDict (bug preexistente). El campo `nodes_ids: List[str]` sí está declarado pero **no lo usa nadie** — su docstring ya decía "list of article id from vector search".
-- Se repurpone/renombra ese campo huérfano a `context_refs: List[tuple]`, dejando el estado consistente con lo que de verdad se produce y consume.
 
-### 7. `Pipeline_RAG/Prompts/prompt_template.py::create_few_shot_prompt_with_context`
 
-- Cambio mínimo y mecánico: `context = state["article_ids"]` → `context = state["context_refs"]`, solo para no romper el wiring del grafo.
-- Se agrega un comentario explícito señalando que el texto del prompt (`"A context is provided from a vector search in a form of tuple ('a..', 'W..')..."`) y los ejemplos few-shot de `Prompts/prompt_examples.py` siguen asumiendo el esquema de artículos (ids tipo `W...` de OpenAlex) y que, para que esta rama del flujo (`graph_qa_with_context`) genere Cypher correcto sobre `Model`/`Dataset`/`Space`, hace falta un trabajo aparte: reescribir ese texto instructivo y agregar ejemplos few-shot Cypher sobre el esquema del HF Hub graph. **No se implementa en este cambio.**
-
-## Verificación
-
-1. Confirmar que no hay errores de import: `python -c "from Chains.vector_graph_chain import get_vector_graph_chain"` desde `Pipeline_RAG/` (con el venv activado y `.env` cargado).
-2. Probar el retriever de forma aislada con una pregunta que debería calzar con varios tipos de nodo (ej. una sobre un modelo específico y otra más genérica), inspeccionando que los `Document.metadata` devueltos mezclen labels distintos y que `score` venga ordenado descendentemente.
-3. Ejecutar `Graph/nodes.py::vector_search(state)` con un `state` de prueba (`question`, `subqueries`) y confirmar que `context_refs` trae tuplas `(label, node_id)` de tipos variados, no solo un label.
-4. Correr el flujo completo vía `00_run_script.ipynb` con una pregunta que dispare la rama de vector search, y confirmar que `graph_qa_with_context` no truena (aunque, por el alcance acordado, su Cypher generado puede seguir siendo incorrecto para ids de `Model`/`Dataset` — eso queda pendiente).
