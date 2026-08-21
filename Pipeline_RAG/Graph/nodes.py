@@ -8,10 +8,12 @@ from langchain_openai import AzureChatOpenAI,AzureOpenAIEmbeddings
 from Chains.vector_graph_chain import get_vector_graph_chain
 from Chains.graph_qa_chain import get_graph_qa_chain, get_graph_qa_chain_with_context
 from Chains.decompose import query_analyzer
+from Chains.retriever_router import retriever_router as retriever_router_agent
 from Prompts.prompt_template import create_few_shot_prompt, create_few_shot_prompt_with_context
 from Prompts.prompt_examples import examples
 from Graph.state import GraphState
 from Tools.parse_vector_search import DocumentModel
+from Indexes.index import ALL_LABELS  # fallback del retriever_router / vector_search
 
 
 neo4j_url = os.environ.get('NEO4J_URI')
@@ -50,6 +52,25 @@ def decomposer(state: GraphState):
     question = state["question"]
     subqueries = query_analyzer.invoke(question)
     return {"subqueries": subqueries, "question":question}
+
+
+def retriever_router(state: GraphState):
+    queries = state["subqueries"]
+    similarity_query = queries[0].sub_query if queries else state["question"]
+    try:
+        labels = retriever_router_agent.invoke(
+            {"subquery": similarity_query}
+        ).labels
+    except Exception as e:
+        print(f"---RETRIEVER ROUTER FALLO (error: {e}); USANDO TODOS LOS LABELS----")
+        labels = []
+    labels = [l for l in labels if l in ALL_LABELS] or ALL_LABELS
+    print(f"---RETRIEVER ROUTER -> {labels}---")
+    return {
+        "target_labels": labels,
+        "subqueries": queries,
+        "question": state["question"],
+    }
     
 def vector_search(state: GraphState):
     
@@ -58,19 +79,23 @@ def vector_search(state: GraphState):
 
     question = state["question"]
     queries = state["subqueries"]
-    
-    
-    vector_graph_chain = get_vector_graph_chain()
+    labels = state.get("target_labels") or ALL_LABELS
+    # decomposer no garantiza N subqueries; si faltan, caemos a la pregunta original
+    sim_query = queries[0].sub_query if queries else question
+
+    vector_graph_chain = get_vector_graph_chain(labels, top_k=5)
 
     chain_result = vector_graph_chain.invoke({
-        "query": queries[0].sub_query},
+        "query": sim_query},
     )
     # Convert the result to a list of DocumentModel instances
     documents = [DocumentModel(**doc.dict()) for doc in chain_result['source_documents']]
     extracted_data = [{"label": doc.metadata.label, "node_id": doc.metadata.node_id} for doc in documents]
     context_refs = [(doc.metadata.label, doc.metadata.node_id) for doc in documents]
 
-    return {"context_refs": context_refs, "documents": extracted_data, "question":question, "subqueries": queries}
+    return {"context_refs": context_refs, "documents": extracted_data, 
+    "question":question, "subqueries": queries,
+    "target_labels": labels}
 
 
 def  prompt_template(state: GraphState):
@@ -123,8 +148,11 @@ def graph_qa_with_context(state: GraphState):
     '''Returns a dictionary of at least one of the GraphState'''
     '''Invoke a Graph QA chain with dynamic prompt template'''
     
+    question = state["question"]
     queries = state["subqueries"]
     prompt_with_context = state["prompt_with_context"]
+    # decomposer no garantiza 2 subqueries; si solo hay una, usamos la pregunta original
+    graph_query = queries[1].sub_query if len(queries) > 1 else question
 
     # Instantiate graph_qa_chain_with_context
     # Pass the GraphState as 'state'. This chain uses state['prompt'] as input argument
@@ -132,7 +160,7 @@ def graph_qa_with_context(state: GraphState):
     
     result = graph_qa_chain.invoke(
         {
-            "query": queries[1].sub_query,
+            "query": graph_query,
         },
     )
     return {"documents": result, "prompt_with_context":prompt_with_context, "subqueries": queries}

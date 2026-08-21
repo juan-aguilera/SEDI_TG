@@ -3,12 +3,19 @@
 # Este archivo arma la pieza encargada de la "busqueda por similitud"
 # (vector search): en vez de traducir la pregunta a una consulta Cypher
 # exacta, convierte la pregunta en un vector numerico (embedding) y busca,
-# dentro de Neo4j, los nodos (hoy: Model) cuyo texto sea mas parecido a
+# dentro de Neo4j, los nodos cuyos textos embebidos sean mas parecidos a
 # esa pregunta (los vecinos mas cercanos en ese espacio de vectores).
 #
+# Los labels a buscar (Model, Dataset, Space, Repository, Author, Tag)
+# NO se fijan aqui: los elige el retriever_router (Chains/retriever_router.py)
+# y llegan como argumento a get_vector_graph_chain(labels, ...). La busqueda
+# multi-label la hace Indexes/index.py::MultilabelRetriever, que consulta
+# uno o mas indices `vec_<label>_embedding` y fusiona resultados por score.
+#
 # Esto es util cuando el usuario hace una pregunta "difusa" (por ejemplo,
-# "modelos para clasificacion de texto") que no se puede traducir facil a
-# una consulta Cypher exacta, porque no menciona ids o nombres concretos.
+# "modelos para clasificacion de texto" o "spaces con gradio") que no se
+# puede traducir facil a una consulta Cypher exacta, porque no menciona
+# ids o nombres concretos.
 #
 # El resultado de esta cadena no es solo una respuesta en texto: tambien
 # devuelve los documentos originales encontrados (return_source_documents),
@@ -22,7 +29,7 @@ from langchain_openai import AzureChatOpenAI  # Cliente para hablar con un deplo
 from langchain_classic.chains import RetrievalQA  # RetrievalQA: arma una cadena "pregunta -> buscar documentos parecidos -> responder usando esos documentos"
 
 # ── Importaciones propias del proyecto ──
-from Indexes import index   # Modulo que sabe conectarse al indice vectorial ya existente en Neo4j
+from Indexes import index   # Modulo con MultilabelRetriever y los indices vectoriales por label
 
 # ── Creamos la conexion con el modelo de lenguaje (LLM) que va a redactar la respuesta ──
 # Mismo patron que Chains/graph_qa_chain.py: Azure OpenAI, no OpenAI publico
@@ -36,24 +43,23 @@ llm = AzureChatOpenAI(
     # pasar temperature=0 explicito hace que Azure devuelva un 400 BadRequestError.
 )
 
-# ── Obtenemos el indice vectorial ya existente en Neo4j ──
-# get_neo4j_vector_index() (definido en Indexes/index.py) se conecta a
-# Neo4j y arma un objeto Neo4jVector sobre el indice `vec_model_embedding`,
-# ya creado y poblado de antemano por Pipeline_embeddings.
-# OJO: esta linea se ejecuta UNA sola vez, apenas Python importa este
-# archivo (no cada vez que se llama a get_vector_graph_chain), asi que la
-# conexion al indice se crea al arrancar el programa y se reutiliza despues.
-vector_index = index.get_neo4j_vector_index()
 
-def get_vector_graph_chain():
-    '''Create a Neo4j Retrieval QA Chain. Returns top K most relevant Model nodes'''
+def get_vector_graph_chain(labels, top_k=5):
+    '''Crea una RetrievalQA sobre los indices vectoriales de los labels dados.
+
+    labels: lista elegida por el retriever_router (1..N de los 6 labels HF Hub).
+    top_k: cuantos documentos devolver tras fusionar scores entre labels.
+    '''
     # Arma la cadena de "Retrieval QA": dado un texto de entrada (query),
-    # busca los documentos mas similares en el indice vectorial y le pide
-    # al LLM que responda usando esos documentos como contexto.
+    # busca los documentos mas similares en los indices de esos labels y le
+    # pide al LLM que responda usando esos documentos como contexto.
+    # OJO: ya NO se crea un Neo4jVector a nivel de modulo (eso fijaba un
+    # solo label al importar). El retriever se construye por llamada, con
+    # los labels de esta pregunta; el cache de indices vive en index.py.
     vector_graph_chain = RetrievalQA.from_chain_type(
         llm,                                            # El modelo que va a redactar la respuesta final
         chain_type="stuff",                              # "stuff" = meter todos los documentos encontrados directo en el prompt (la forma mas simple; ojo con textos muy largos)
-        retriever = vector_index.as_retriever(search_kwargs={'k':3}),  # Convierte el indice en un "buscador": trae los k=3 nodos mas parecidos a la pregunta
+        retriever=index.MultilabelRetriever(labels=labels, top_k=top_k),  # Busca en N indices y fusiona por score
         verbose=True,                                     # Imprime en la consola los pasos internos (util para depurar / entender que esta pasando)
         return_source_documents=True,                     # Ademas de la respuesta en texto, devuelve los documentos originales usados (necesario para luego extraer label/node_id)
     )

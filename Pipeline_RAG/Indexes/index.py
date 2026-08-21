@@ -13,6 +13,7 @@
 # ─────────────────────────────────────────────────────────────────────
 
 import os
+from langchain_core.retrievers import BaseRetriever
 from langchain_neo4j import Neo4jVector
 from langchain_openai import AzureOpenAIEmbeddings
 
@@ -126,6 +127,8 @@ def _build_retrieval_query(label: str, id_key: str, text_props: list[str]) -> st
         f"node{{node_id: node.{id_key}, label: '{label}'}} AS metadata, score"
     )
 
+_INDEX_CACHE: dict[str, Neo4jVector] = {}
+
 
 def get_neo4j_vector_index(label: str = "Model"):
     '''Conecta con el indice vectorial ya existente en Neo4j para `label`.
@@ -134,10 +137,13 @@ def get_neo4j_vector_index(label: str = "Model"):
     conecta al indice `vec_<label>_embedding` ya creado por
     Pipeline_embeddings/load_to_neo4j.py, sin crear ni escribir nada nuevo.
     Devuelve un Neo4jVector normal - se usa igual que antes (.as_retriever(...)).
+    Tiene en cuenta el cache para no volver a conectar a la misma base de datos si ya se ha conectado antes
+    para el mismo label.
     '''
+    if label in _INDEX_CACHE:
+        return _INDEX_CACHE[label]
     cfg = LABEL_CONFIG[label]
-
-    return Neo4jVector.from_existing_index(
+    idx = Neo4jVector.from_existing_index(
         embedding=_get_embedding_model(),
         url=os.environ["NEO4J_URI"],
         username=os.environ["NEO4J_USER"],
@@ -146,12 +152,24 @@ def get_neo4j_vector_index(label: str = "Model"):
         index_name=f"vec_{label.lower()}_embedding",
         retrieval_query=_build_retrieval_query(label, cfg["id_key"], cfg["text_props"]),
     )
-def multi_label_similarity_search(query,labels,top_k=5):
+    _INDEX_CACHE[label] = idx
+    return idx
+
+
+def multi_label_similarity_search(query, labels, top_k=5):
     hits = []
     for label in labels:
         idx = get_neo4j_vector_index(label)
         for doc, score in idx.similarity_search_with_score(query, k=top_k):
             doc.metadata["score"] = score
-            hits.append((score,doc))
+            hits.append((score, doc))
     hits.sort(key=lambda h: h[0], reverse=True)
     return [doc for _, doc in hits[:top_k]]
+
+
+class MultilabelRetriever(BaseRetriever):
+    labels: list[str]  # labels sobre los que buscar
+    top_k: int = 5  # cuantos resultados devolver tras fusionar scores
+
+    def _get_relevant_documents(self, query, *, run_manager=None):
+        return multi_label_similarity_search(query, self.labels, self.top_k)

@@ -6,8 +6,8 @@ from langgraph.graph import END, StateGraph
 # Import Custom Libraries
 from Chains.router import question_router
 from Graph.state import GraphState
-from Graph.labels import DECOMPOSER, VECTOR_SEARCH, GRAPH_QA, GRAPH_QA_WITH_CONTEXT, PROMPT_TEMPLATE, PROMPT_TEMPLATE_WITH_CONTEXT
-from Graph.nodes import decomposer, vector_search, graph_qa, graph_qa_with_context, prompt_template, prompt_template_with_context
+from Graph.labels import DECOMPOSER, RETRIEVER_ROUTER, VECTOR_SEARCH, GRAPH_QA, GRAPH_QA_WITH_CONTEXT, PROMPT_TEMPLATE, PROMPT_TEMPLATE_WITH_CONTEXT
+from Graph.nodes import decomposer, retriever_router, vector_search, graph_qa, graph_qa_with_context, prompt_template, prompt_template_with_context
 
 
 load_dotenv()
@@ -32,6 +32,7 @@ workflow.add_node(GRAPH_QA, graph_qa)
 
 # Nodes for graph qa with vector search
 workflow.add_node(DECOMPOSER, decomposer)
+workflow.add_node(RETRIEVER_ROUTER, retriever_router)
 workflow.add_node(VECTOR_SEARCH, vector_search)
 workflow.add_node(PROMPT_TEMPLATE_WITH_CONTEXT, prompt_template_with_context)
 workflow.add_node(GRAPH_QA_WITH_CONTEXT, graph_qa_with_context)
@@ -46,7 +47,8 @@ workflow.set_conditional_entry_point(
 )
 
 # Edges for graph qa with vector search
-workflow.add_edge(DECOMPOSER, VECTOR_SEARCH)
+workflow.add_edge(DECOMPOSER, RETRIEVER_ROUTER)
+workflow.add_edge(RETRIEVER_ROUTER, VECTOR_SEARCH)
 workflow.add_edge(VECTOR_SEARCH, PROMPT_TEMPLATE_WITH_CONTEXT)
 workflow.add_edge(PROMPT_TEMPLATE_WITH_CONTEXT, GRAPH_QA_WITH_CONTEXT)
 workflow.add_edge(GRAPH_QA_WITH_CONTEXT, END)

@@ -20,6 +20,7 @@ class GraphState(TypedDict):
     prompt: object
     prompt_with_context: object
     subqueries: object
+    target_labels: list[str]
 
     """
     GraphState es el "estado compartido" que va pasando por todo el flujo del pipeline. Está definido
@@ -50,6 +51,8 @@ Las casillas que tiene
 │ prompt_with_context │ Las mismas instrucciones, pero ya con contexto extra incluido.              │
 ├─────────────────────┼─────────────────────────────────────────────────────────────────────────────┤
 │ subqueries          │ Las sub-preguntas en que se descompuso la pregunta original.                │
+├─────────────────────┼─────────────────────────────────────────────────────────────────────────────┤
+│ target_labels       │ Los labels elegidos por el retriever_router para la busqueda por similitud.  │
 └─────────────────────┴─────────────────────────────────────────────────────────────────────────────┘
 
 Cómo se usa en graph_qa_chain.py
