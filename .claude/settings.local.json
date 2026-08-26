@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Read(//c/Users/EGamba/Desktop/OneDrive - LS Cable/BACKUP/TG/CODIGO_TG/files/**)",
+      "Bash(./.venv/Scripts/python.exe -c ' *)",
+      "Bash(python3 -c ' *)",
+      "Bash(\".venv/Scripts/python.exe\" -c \"import dotenv; print\\(dotenv.__file__\\)\")",
+      "Bash(\".venv/Scripts/python.exe\" -m jupyter kernelspec list)",
+      "Bash(\".venv/Scripts/python.exe\" -m pip install ipykernel)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
+    ]
+  }
+}

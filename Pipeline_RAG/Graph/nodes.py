@@ -27,7 +27,7 @@ graph = Neo4jGraph(
     password=neo4j_pwd,
     database=neo4j_db,
 )
-
+schema = graph.get_schema()   
 llm = AzureChatOpenAI(
 
     azure_deployment=os.environ.get("AZURE_CHAT_DEPLOYMENT"),     # nombre del deployment en Foundry (gpt-5-mini)
@@ -106,7 +106,7 @@ def  prompt_template(state: GraphState):
     question = state["question"]
 
     # Create a prompt template
-    prompt = create_few_shot_prompt()
+    prompt = create_few_shot_prompt(schema)
     
     return {"prompt": prompt, "question":question}
     
@@ -137,7 +137,7 @@ def prompt_template_with_context(state: GraphState):
     queries = state["subqueries"]
 
     # Create a prompt template
-    prompt_with_context = create_few_shot_prompt_with_context(state)
+    prompt_with_context = create_few_shot_prompt_with_context(state,schema)
     
     return {"prompt_with_context": prompt_with_context, "question":question, "subqueries": queries}
 
