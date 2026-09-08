@@ -27,7 +27,7 @@ graph = Neo4jGraph(
     password=neo4j_pwd,
     database=neo4j_db,
 )
-schema = graph.get_schema()   
+schema = graph.get_schema   
 llm = AzureChatOpenAI(
 
     azure_deployment=os.environ.get("AZURE_CHAT_DEPLOYMENT"),     # nombre del deployment en Foundry (gpt-5-mini)

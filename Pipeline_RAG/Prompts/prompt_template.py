@@ -40,7 +40,7 @@ example_prompt = PromptTemplate(
 def create_few_shot_prompt(schema):
     '''Create a prompt template without context variable. The suffix provides dynamically selected prompt examples using similarity search'''
     
-    prefix = f"""
+    prefix = """
     Task:Generate Cypher statement to query a graph database.
     Instructions:
     Use only the provided relationship types and properties in the schema.
@@ -60,7 +60,7 @@ def create_few_shot_prompt(schema):
         example_prompt = example_prompt,
         prefix=prefix,
         suffix="Question: {question}, \nCypher Query: ",
-        input_variables =["question","query"],
+        input_variables =["question","query","schema"],
     ) 
     return FEW_SHOT_PROMPT
 
@@ -77,7 +77,7 @@ def create_few_shot_prompt_with_context(state: GraphState, schema):
     # esos ids en Cypher contra Model/Dataset/Space. Adaptar el texto y los
     # ejemplos few-shot al esquema real queda fuera de alcance de este cambio
     # (ver PLAN_busqueda_vectorial_multilabel.md punto 7 y ARQUITECTURA_Y_WORKFLOW.md).
-    prefix = f"""
+    prefix = """
     Task:Generate Cypher statement to query a graph database.
     Instructions:
     Use only the provided relationship types and properties in the schema.
@@ -89,8 +89,7 @@ def create_few_shot_prompt_with_context(state: GraphState, schema):
     
     A context is provided from a vector search in a form of tuple (label,node_id) where label is the type of node and node_id is the id of the node in the graph.
     Use the second element of the tuple as a node id to construct the Cypher statement. 
-    Here are the contexts: {context}
-
+    Here are the contexts: """ + str(context) + """
     Using node id from the context above, create cypher statements and use that to query with the graph.
     Examples: Here are a few examples of generated Cypher statements for some question examples:
     """
@@ -100,6 +99,6 @@ def create_few_shot_prompt_with_context(state: GraphState, schema):
         example_prompt = example_prompt,
         prefix=prefix,
         suffix="Question: {question}, \nCypher Query: ",
-        input_variables =["question", "query"],
+        input_variables =["question", "query", "schema"],
     ) 
     return FEW_SHOT_PROMPT
