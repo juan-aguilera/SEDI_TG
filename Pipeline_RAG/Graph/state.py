@@ -21,6 +21,7 @@ class GraphState(TypedDict):
     prompt_with_context: object
     subqueries: object
     target_labels: list[str]
+    answer: str
 
     """
     GraphState es el "estado compartido" que va pasando por todo el flujo del pipeline. Está definido
@@ -53,24 +54,7 @@ Las casillas que tiene
 │ subqueries          │ Las sub-preguntas en que se descompuso la pregunta original.                │
 ├─────────────────────┼─────────────────────────────────────────────────────────────────────────────┤
 │ target_labels       │ Los labels elegidos por el retriever_router para la busqueda por similitud.  │
+├─────────────────────┼─────────────────────────────────────────────────────────────────────────────┤
+│ answer              │ La respuesta generada por el modelo usando documents como contexto .                                       │
 └─────────────────────┴─────────────────────────────────────────────────────────────────────────────┘
-
-Cómo se usa en graph_qa_chain.py
-
-Fíjate que las dos funciones reciben state: GraphState y de ahí solo sacan una casilla:
-
-def get_graph_qa_chain(state: GraphState):
-    prompt = state["prompt"]              # lee la casilla "prompt" d
-    ...
-
-def get_graph_qa_chain_with_context(state: GraphState):
-    prompt_with_context = state["prompt_with_context"]   # lee la casilla "prompt_with_context"
-    ...
-
-O sea: GraphState no "hace" nada por sí solo, es solo el contenedor que transporta la información entre pasos.
- En este archivo se usa nada más para leer las instrucciones (prompt / prompt_with_context) que otros pasos 
- anteriores ya dejaron listas en la ficha.
-
-Ese : GraphState que aparece después del nombre del parámetro es una  lector (y a los editores de código) 
-"aquí espero recibir una fichacon esa forma". No obliga en tiempo de ejecución — es documentación qr errores.
 """

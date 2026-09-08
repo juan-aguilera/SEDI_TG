@@ -14,7 +14,7 @@ from Prompts.prompt_examples import examples
 from Graph.state import GraphState
 from Tools.parse_vector_search import DocumentModel
 from Indexes.index import ALL_LABELS  # fallback del retriever_router / vector_search
-
+from Chains.generate_answer import generate_answer
 
 neo4j_url = os.environ.get('NEO4J_URI')
 neo4j_user = os.environ.get('NEO4J_USER')
@@ -165,4 +165,12 @@ def graph_qa_with_context(state: GraphState):
     )
     return {"documents": result, "prompt_with_context":prompt_with_context, "subqueries": queries}
 
+
+def generate(state: GraphState):
+    print("----GENERATE ANSWER----")
+    answer = generate_answer({
+        "question": state["question"],
+        "documents": state["documents"],
+    })
+    return {"answer": answer}
 

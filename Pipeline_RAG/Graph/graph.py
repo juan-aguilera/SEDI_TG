@@ -6,8 +6,8 @@ from langgraph.graph import END, StateGraph
 # Import Custom Libraries
 from Chains.router import question_router
 from Graph.state import GraphState
-from Graph.labels import DECOMPOSER, RETRIEVER_ROUTER, VECTOR_SEARCH, GRAPH_QA, GRAPH_QA_WITH_CONTEXT, PROMPT_TEMPLATE, PROMPT_TEMPLATE_WITH_CONTEXT
-from Graph.nodes import decomposer, retriever_router, vector_search, graph_qa, graph_qa_with_context, prompt_template, prompt_template_with_context
+from Graph.labels import DECOMPOSER, RETRIEVER_ROUTER, VECTOR_SEARCH, GRAPH_QA, GRAPH_QA_WITH_CONTEXT, PROMPT_TEMPLATE, PROMPT_TEMPLATE_WITH_CONTEXT,GENERATE
+from Graph.nodes import decomposer, retriever_router, vector_search, graph_qa, graph_qa_with_context, prompt_template, prompt_template_with_context, generate
 
 
 load_dotenv()
@@ -22,7 +22,6 @@ def route_question(state: GraphState):
     elif source.datasource == "graph query":
         print("---ROUTE QUESTION TO GRAPH QA---")
         return "prompt_template"
-    
 
 workflow = StateGraph(GraphState)
 
@@ -36,6 +35,7 @@ workflow.add_node(RETRIEVER_ROUTER, retriever_router)
 workflow.add_node(VECTOR_SEARCH, vector_search)
 workflow.add_node(PROMPT_TEMPLATE_WITH_CONTEXT, prompt_template_with_context)
 workflow.add_node(GRAPH_QA_WITH_CONTEXT, graph_qa_with_context)
+workflow.add_node(GENERATE, generate)
 
 # Set conditional entry point for vector search or graph qa
 workflow.set_conditional_entry_point(
@@ -51,11 +51,13 @@ workflow.add_edge(DECOMPOSER, RETRIEVER_ROUTER)
 workflow.add_edge(RETRIEVER_ROUTER, VECTOR_SEARCH)
 workflow.add_edge(VECTOR_SEARCH, PROMPT_TEMPLATE_WITH_CONTEXT)
 workflow.add_edge(PROMPT_TEMPLATE_WITH_CONTEXT, GRAPH_QA_WITH_CONTEXT)
-workflow.add_edge(GRAPH_QA_WITH_CONTEXT, END)
+workflow.add_edge(GRAPH_QA_WITH_CONTEXT, GENERATE)
+workflow.add_edge(GENERATE, END)
 
 # Edges for graph qa
 workflow.add_edge(PROMPT_TEMPLATE, GRAPH_QA)
-workflow.add_edge(GRAPH_QA, END)
+workflow.add_edge(GRAPH_QA, GENERATE)
+workflow.add_edge(GENERATE, END)
 
 app = workflow.compile()
 
