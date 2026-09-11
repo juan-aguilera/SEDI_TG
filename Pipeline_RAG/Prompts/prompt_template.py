@@ -51,8 +51,11 @@ def create_few_shot_prompt(schema):
     Note: Do not include any explanations or apologies in your responses.
     Do not respond to any questions that might ask anything else than for you to construct a Cypher statement.
     Do not include any text except the generated Cypher statement.
+    Emit exactly one Cypher statement. A single RETURN, and only at the end.
+    For intermediate aggregations or to chain OPTIONAL MATCH, use WITH, never a second RETURN.
+    Do not concatenate multiple queries.
 
-    Examples: Here are a few examples of generated Cypher statements for particular questions:
+    Examples: Here are a few examples of generated Cypher statement for particular questions:
     """
 
     FEW_SHOT_PROMPT = FewShotPromptTemplate(
@@ -70,13 +73,10 @@ def create_few_shot_prompt_with_context(state: GraphState, schema):
     
     context = state["context_refs"]
 
-    # NOTA: el prefijo de abajo y los ejemplos few-shot de Prompts/prompt_examples.py
-    # todavia asumen ids estilo OpenAlex ("W...", esquema de articulos). Ahora
-    # `context` trae tuplas (label, node_id) reales del grafo de HF Hub (ej.
-    # ("Model", "bert-base-uncased")), pero el LLM no tiene ejemplos de como usar
-    # esos ids en Cypher contra Model/Dataset/Space. Adaptar el texto y los
-    # ejemplos few-shot al esquema real queda fuera de alcance de este cambio
-    # (ver PLAN_busqueda_vectorial_multilabel.md punto 7 y ARQUITECTURA_Y_WORKFLOW.md).
+    # `context` son tuplas (label, node_id) del grafo HF Hub. El prefijo pide
+    # un solo Cypher filtrando con IN [...]; el ejemplo fijo de abajo (y el
+    # few-shot equivalente en prompt_examples.py) muestra OPTIONAL MATCH + WITH
+    # + un solo RETURN, que es el patron que Neo4j exige.
     prefix = """
     Task:Generate Cypher statement to query a graph database.
     Instructions:
@@ -86,12 +86,20 @@ def create_few_shot_prompt_with_context(state: GraphState, schema):
     Note: Do not include any explanations or apologies in your responses.
     Do not respond to any questions that might ask anything else than for you to construct a Cypher statement.
     Do not include any text except the generated Cypher statement.
-    
-    A context is provided from a vector search in a form of tuple (label,node_id) where label is the type of node and node_id is the id of the node in the graph.
-    Use the second element of the tuple as a node id to construct the Cypher statement. 
+    Emit exactly one Cypher statement. A single RETURN, and only at the end.
+    For intermediate aggregations or to chain OPTIONAL MATCH, use WITH, never a second RETURN.
+    Do not concatenate multiple queries.
+
+    A context is provided from a vector search in a form of tuple (label, node_id) where label is the type of node and node_id is the id of the node in the graph.
+    Use the second element of each tuple as a node id. Filter with WHERE <id_property> IN [...ids from context...].
     Here are the contexts: """ + str(context) + """
-    Using node id from the context above, create cypher statements and use that to query with the graph.
-    Examples: Here are a few examples of generated Cypher statements for some question examples:
+    Using node ids from the context above, create a Cypher statement and use that to query the graph.
+
+    Example of the required shape (one statement, OPTIONAL MATCH, WITH, one RETURN):
+    Question: Using the list of model_ids from the similarity search, retrieve those models with pipeline tag, repository, tags and spaces
+    Cypher query: MATCH (m:Model) WHERE m.model_id IN ['bert-base-uncased', 'distilbert-base-uncased'] OPTIONAL MATCH (m)-[:IS_A]->(r:Repository) OPTIONAL MATCH (r)-[:HAS_TAG]->(t:Tag) WITH m, r, collect(DISTINCT t.name) AS tags OPTIONAL MATCH (s:Space)-[:USES_MODEL]->(m) RETURN m.model_id AS model_id, m.pipeline_tag AS pipeline_tag, r.id AS repo_id, r.name AS repo_name, tags, collect(DISTINCT s.space_id) AS spaces LIMIT 5
+
+    Examples: Here are a few examples of generated Cypher statement for some question examples:
     """
 
     FEW_SHOT_PROMPT = FewShotPromptTemplate(

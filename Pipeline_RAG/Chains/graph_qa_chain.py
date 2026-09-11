@@ -27,6 +27,7 @@ from langchain_openai import AzureChatOpenAI                       # Cliente par
 # ── Importaciones propias del proyecto ──
 from Prompts.prompt_template import create_few_shot_prompt, create_few_shot_prompt_with_context  # Funciones que arman las instrucciones que se le dan al modelo (no se usan directamente en este archivo, se importan por si se necesitan)
 from Graph.state import GraphState           # Define la "forma" del estado que se pasa entre los pasos del flujo (question, prompt, documents, etc.)
+from Tools.sanitize_cypher import clip_to_single_statement
 
 # ── Nos conectamos a la base de datos Neo4j (instancia LOCAL, no AuraDB) ──
 # Estos datos (direccion, usuario, contrasena, nombre de la base) se leen
@@ -38,6 +39,24 @@ graph = Neo4jGraph(
     password=os.environ.get('NEO4J_PASSWORD'),# Contrasena de ese usuario
     database=os.environ.get('NEO4J_DATABASE'),# Nombre de la base de datos dentro del servidor Neo4j
 )
+
+# GraphCypherQAChain llama graph.query(cypher) tal cual. Si el LLM pego dos
+# sentencias o un RETURN a mitad de query, Neo4j tira 42I38. Recortamos aqui
+# (despues del corrector de schema, antes de ejecutar).
+_orig_graph_query = graph.query
+
+
+def _query_single_statement(query, params=None, **kwargs):
+    clipped = clip_to_single_statement(query)
+    if clipped != (query or "").strip().strip("`"):
+        print("---CLIPPED CYPHER (kept first RETURN + ORDER BY/LIMIT)---")
+        print(clipped)
+    if params is None:
+        return _orig_graph_query(clipped, **kwargs)
+    return _orig_graph_query(clipped, params, **kwargs)
+
+
+graph.query = _query_single_statement
 
 # ── Creamos la conexion con el modelo de lenguaje (LLM) que va a traducir preguntas a Cypher ──
 # Este modelo vive en Azure AI Foundry (un "deployment" propio), no en OpenAI publico.

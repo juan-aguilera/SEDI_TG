@@ -1,6 +1,10 @@
 examples = [
     # ── Model ────────────────────────────────────────────────────────
     {
+        "question": "Using the list of model_ids from the similarity search, query Neo4j to retrieve the corresponding Model nodes and return the top 5 with pipeline tag, repository, tags and spaces",
+        "query": "MATCH (m:Model) WHERE m.model_id IN ['bert-base-uncased', 'distilbert-base-uncased'] OPTIONAL MATCH (m)-[:IS_A]->(r:Repository) OPTIONAL MATCH (r)-[:HAS_TAG]->(t:Tag) WITH m, r, collect(DISTINCT t.name) AS tags OPTIONAL MATCH (s:Space)-[:USES_MODEL]->(m) RETURN m.model_id AS model_id, m.pipeline_tag AS pipeline_tag, r.id AS repo_id, r.name AS repo_name, tags, collect(DISTINCT s.space_id) AS spaces LIMIT 5",
+    },
+    {
         "question": "What is the pipeline tag of a specific model, e.g bert-base-uncased?",
         "query": "MATCH (m:Model) WHERE m.model_id = 'bert-base-uncased' RETURN m.model_id, m.pipeline_tag",
     },

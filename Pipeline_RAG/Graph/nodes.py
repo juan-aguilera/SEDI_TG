@@ -1,5 +1,7 @@
 # Import Python libraries
 import os
+import time
+from functools import wraps
 from langchain_neo4j import Neo4jGraph
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_openai import AzureChatOpenAI,AzureOpenAIEmbeddings
@@ -44,6 +46,19 @@ EMBEDDING_MODEL = AzureOpenAIEmbeddings(
         api_version=os.environ["AZURE_OPENAI_API_VERSION"],
         azure_deployment=os.environ["AZURE_EMBEDDING_DEPLOYMENT"])
 
+
+def timed_node(func):
+    """Mide y imprime el tiempo de ejecucion de cada nodo del grafo."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        t0 = time.perf_counter()
+        result = func(*args, **kwargs)
+        print(f"--- {func.__name__} {time.perf_counter()-t0:.1f}s ---")
+        return result
+    return wrapper
+
+
+@timed_node
 def decomposer(state: GraphState):
     
     '''Returns a dictionary of at least one of the GraphState'''    
@@ -54,6 +69,7 @@ def decomposer(state: GraphState):
     return {"subqueries": subqueries, "question":question}
 
 
+@timed_node
 def retriever_router(state: GraphState):
     queries = state["subqueries"]
     similarity_query = queries[0].sub_query if queries else state["question"]
@@ -72,6 +88,7 @@ def retriever_router(state: GraphState):
         "question": state["question"],
     }
     
+@timed_node
 def vector_search(state: GraphState):
     
     ''' Returns a dictionary of at least one of the GraphState'''
@@ -98,7 +115,8 @@ def vector_search(state: GraphState):
     "target_labels": labels}
 
 
-def  prompt_template(state: GraphState):
+@timed_node
+def prompt_template(state: GraphState):
     
     '''Returns a dictionary of at least one of the GraphState'''
     '''Create a simple prompt tempalate for graph qa chain'''
@@ -111,6 +129,7 @@ def  prompt_template(state: GraphState):
     return {"prompt": prompt, "question":question}
     
 
+@timed_node
 def graph_qa(state: GraphState):
     
     ''' Returns a dictionary of at least one of the GraphState '''
@@ -128,6 +147,7 @@ def graph_qa(state: GraphState):
     )
     return {"documents": result, "question":question}
     
+@timed_node
 def prompt_template_with_context(state: GraphState):
     
     '''Returns a dictionary of at least one of the GraphState'''
@@ -143,6 +163,7 @@ def prompt_template_with_context(state: GraphState):
 
 
 
+@timed_node
 def graph_qa_with_context(state: GraphState):
     
     '''Returns a dictionary of at least one of the GraphState'''
@@ -166,6 +187,7 @@ def graph_qa_with_context(state: GraphState):
     return {"documents": result, "prompt_with_context":prompt_with_context, "subqueries": queries}
 
 
+@timed_node
 def generate(state: GraphState):
     print("----GENERATE ANSWER----")
     answer = generate_answer({
