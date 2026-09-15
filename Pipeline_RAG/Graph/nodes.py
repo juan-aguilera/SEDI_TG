@@ -17,7 +17,8 @@ from Graph.state import GraphState
 from Tools.parse_vector_search import DocumentModel
 from Indexes.index import ALL_LABELS  # fallback del retriever_router / vector_search
 from Chains.generate_answer import generate_answer
-
+from pydantic import BaseModel, Field                               # Para definir la "forma" de los datos de salida
+from Chains.retriever_router_and_decomposer import retriever_decompose_router 
 neo4j_url = os.environ.get('NEO4J_URI')
 neo4j_user = os.environ.get('NEO4J_USER')
 neo4j_pwd = os.environ.get('NEO4J_PASSWORD')
@@ -87,7 +88,33 @@ def retriever_router(state: GraphState):
         "subqueries": queries,
         "question": state["question"],
     }
-    
+
+@timed_node
+def decompose_and_route(state: GraphState):
+    question = state["question"]
+    class SubQuery(BaseModel):
+        sub_query: str = Field(
+            ...,
+            description="A unique paraphrasing of the original questions.",
+        )
+    try:
+        result = retriever_decompose_router.invoke({"question": question})
+        subqueries = [
+            SubQuery(sub_query=result.similarity_query),
+            SubQuery(sub_query=result.graph_query),
+        ]
+        labels = [l for l in result.labels if l in ALL_LABELS] or ALL_LABELS
+    except Exception as e:
+        print(f"---DECOMPOSE AND ROUTE FALLO (error: {e}); USANDO PREGUNTA ORIGINAL Y TODOS LOS LABELS---")
+        subqueries = [
+            SubQuery(sub_query=question),
+            SubQuery(sub_query=question),
+        ]
+        labels = []
+    labels = [l for l in result.labels if l in ALL_LABELS] or ALL_LABELS
+
+    return {"subqueries": subqueries, "target_labels": labels, "question": question}
+
 @timed_node
 def vector_search(state: GraphState):
     
