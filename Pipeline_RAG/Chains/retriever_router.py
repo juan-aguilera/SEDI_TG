@@ -3,14 +3,18 @@ from typing import List, Literal
 
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
-from langchain_openai import AzureChatOpenAI                       # Cliente para hablar con un deployment de Azure OpenAI
+from langchain_openai import AzureChatOpenAI        
+from langchain_core.output_parsers import PydanticToolsParser    
 
 
-class RelevantLabels(BaseModel):
-    """Choose which node types to search with vector similarity."""
+
+class DecomposeAndRoute(BaseModel):
+    similarity_query: str = Field(..., description="Sub-question for vector similarity search.")
+    graph_query: str = Field(..., description="Sub-question for the Neo4j Cypher query.")
     labels: List[Literal["Model", "Dataset", "Space", "Repository", "Author", "Tag"]] = Field(
         ...,
-        description="Relevant HF Hub labels for the similarity subquery.",
+        min_length=1,
+        description="Labels to search for the similarity_query, not the graph_query.",
     )
 
 llm = AzureChatOpenAI(
@@ -23,8 +27,7 @@ llm = AzureChatOpenAI(
 )
 
 
-structured_llm_router = llm.with_structured_output(RelevantLabels)
-
+structured_llm_router = llm.with_structured_output(DecomposeAndRoute)
 
 from Indexes.index import LABEL_CONFIG
 _label_catalog = "\n".join(
@@ -33,9 +36,23 @@ _label_catalog = "\n".join(
 )
 
 
-system = f"""You are an expert at choosing which node types (labels) to search with vector
-similarity over a Hugging Face Hub knowledge graph in Neo4j.
-You will receive a similarity-oriented subquery. Return the labels whose
+system = f"""You are an expert at to topics: 
+
+1. converting user questions into questions 
+optimized for vector search and Neo4j Cypher queries.
+
+Perform question decomposition. Given a user question, break it down into two distinct sub-questions that \
+you need to answer in order to answer the original question.
+
+For the given input question, create a question for similarity search and create a question to perform neo4j graph query.
+Here is example:
+Question: Find the articles about the photosynthesis and return their titles.
+Answers:
+similarity_query : Find articles related to photosynthesis.
+graph_query: Return titles of the articles
+
+2. Choosing which node types (labels) to search with vector similarity over a Hugging Face Hub knowledge graph in Neo4j.
+You will receive a similarity-oriented subquery (similarity_query defined in the previous step). Return the labels whose
 embedded metadata are most relevant for that subquery. You may return one or
 more labels.
 Available labels and what they represent:
@@ -66,16 +83,15 @@ Examples:
 - "something about summarization on the hub" -> ["Model", "Dataset", "Space", "Tag"]
 - "things similar to whisper for audio transcription" -> ["Model", "Dataset", "Space"]
 - "content related to llama or llama-like systems" -> ["Model", "Repository", "Space", "Tag"]
-- "who publishes the best demos and models for OCR" -> ["Author", "Space", "Model"]
+- "who publishes the best demos and models for OCR" -> ["Author", "Space", "Model"] 
+
 """
 
-
-
-relevant_labels_prompt = ChatPromptTemplate.from_messages(
+prompt = ChatPromptTemplate.from_messages(
     [
         ("system", system),
-        ("human", "{subquery}"),
+        ("human", "{question}"),
     ]
 )
 
-retriever_router = relevant_labels_prompt | structured_llm_router
+retriever_decompose_router = prompt | structured_llm_router
