@@ -43,7 +43,7 @@ llm = AzureChatOpenAI(
     # pasar temperature=0 explicito hace que Azure devuelva un 400 BadRequestError.
 )
 
-
+"""
 def get_vector_graph_chain(labels, top_k=5):
     '''Crea una RetrievalQA sobre los indices vectoriales de los labels dados.
 
@@ -64,3 +64,12 @@ def get_vector_graph_chain(labels, top_k=5):
         return_source_documents=True,                     # Ademas de la respuesta en texto, devuelve los documentos originales usados (necesario para luego extraer label/node_id)
     )
     return vector_graph_chain   # Devolvemos la cadena ya armada, lista para usarse con .invoke({"query": "..."})
+"""
+
+def get_vector_graph_chain(labels, top_k=5):
+    '''Crea una RetrievalQA sobre los indices vectoriales de los labels dados.
+
+    labels: lista elegida por el retriever_router (1..N de los 6 labels HF Hub).
+    top_k: cuantos documentos devolver tras fusionar scores entre labels.
+    '''
+    return index.MultilabelRetriever(labels=labels, top_k=top_k)

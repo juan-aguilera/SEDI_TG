@@ -115,7 +115,7 @@ def get_graph_qa_chain_with_context(state: GraphState):
             qa_llm = llm,                   # Modelo que arma la respuesta final a partir del resultado
             validate_cypher= True,          # Revisa que la consulta Cypher generada sea valida antes de ejecutarla
             graph=graph,                    # La misma conexion a la base de datos Neo4j
-            verbose=False,                  # Aqui no imprimimos los pasos internos (para no llenar la consola)
+            verbose=True,                  # Aqui no imprimimos los pasos internos (para no llenar la consola)
             cypher_prompt = prompt_with_context,  # Instrucciones que YA incluyen el contexto extra encontrado antes
             # return_intermediate_steps = True,   # (deshabilitado) ver comentario equivalente arriba
             return_direct = True,           # Devuelve el resultado crudo de la base de datos, sin resumen adicional de un LLM

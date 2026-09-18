@@ -127,20 +127,17 @@ def vector_search(state: GraphState):
     # decomposer no garantiza N subqueries; si faltan, caemos a la pregunta original
     sim_query = queries[0].sub_query if queries else question
 
-    vector_graph_chain = get_vector_graph_chain(labels, top_k=5)
+    retriever = get_vector_graph_chain(labels, top_k=5)
+    docs = retriever.invoke(sim_query)
+    chain_result = [DocumentModel(**doc.dict()) for doc in docs]
 
-    chain_result = vector_graph_chain.invoke({
-        "query": sim_query},
-    )
     # Convert the result to a list of DocumentModel instances
-    documents = [DocumentModel(**doc.dict()) for doc in chain_result['source_documents']]
-    extracted_data = [{"label": doc.metadata.label, "node_id": doc.metadata.node_id} for doc in documents]
-    context_refs = [(doc.metadata.label, doc.metadata.node_id) for doc in documents]
+    extracted_data = [{"label": doc.metadata.label, "node_id": doc.metadata.node_id} for doc in chain_result]
+    context_refs = [(doc.metadata.label, doc.metadata.node_id) for doc in chain_result]
 
     return {"context_refs": context_refs, "documents": extracted_data, 
     "question":question, "subqueries": queries,
     "target_labels": labels}
-
 
 @timed_node
 def prompt_template(state: GraphState):

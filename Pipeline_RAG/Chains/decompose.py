@@ -35,13 +35,13 @@ class SubQuery(BaseModel):
 # ── Creamos la conexion con el modelo de chat desplegado en Azure AI Foundry ──
 # AzureChatOpenAI es igual que ChatOpenAI, pero en vez de hablar con el OpenAI
 # publico, habla con TU deployment dentro de un recurso de Azure. Este deployment
-# (gpt-5-mini) vive en el MISMO recurso de Azure que el modelo de embeddings,
-# por eso reutilizamos AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_API_KEY / AZURE_OPENAI_API_VERSION.
+# vive en el MISMO recurso de Azure que el modelo de embeddings, por eso
+# reutilizamos AZURE_OPENAI_ENDPOINT / AZURE_OPENAI_API_KEY / AZURE_OPENAI_API_VERSION.
 llm = AzureChatOpenAI(
-    azure_deployment=os.environ.get("AZURE_CHAT_DEPLOYMENT"),     # nombre del deployment en Foundry (gpt-5-mini)
-    azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),       # URL base del recurso de Azure OpenAI
-    api_key=os.environ.get("AZURE_OPENAI_API_KEY"),               # clave secreta del recurso de Azure
-    api_version=os.environ.get("AZURE_OPENAI_API_VERSION"),       # version de la API (verificar que soporte gpt-5-mini)
+    azure_deployment=os.environ.get("AZURE_DECOMPOSER_DEPLOYMENT"),
+    azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
+    api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
+    api_version=os.environ.get("AZURE_OPENAI_API_VERSION"),
     # temperature no se fija: gpt-5-mini solo acepta el valor por defecto (1);
     # pasar temperature=0 explicito hace que Azure devuelva un 400 BadRequestError.
 )
