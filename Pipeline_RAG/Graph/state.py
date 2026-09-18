@@ -1,5 +1,6 @@
 from typing import List, TypedDict
-
+from typing import Annotated, List, TypedDict
+from langgraph.graph.message import add_messages
 
 class GraphState(TypedDict):
     """
@@ -12,6 +13,10 @@ class GraphState(TypedDict):
         prompt: prompt template object
         prompt_with_context: prompt template with context from vector search
         subqueries: decomposed queries
+        answer: answer
+        messages: historial de la sesión (HumanMessage / AIMessage); se acumula
+        standalone_question: pregunta reescrita, autocontenida, para Cypher/vector
+        route: datasource del turno: "vector search" | "graph query" | "chat"
     """
 
     question: str
@@ -22,6 +27,9 @@ class GraphState(TypedDict):
     subqueries: object
     target_labels: list[str]
     answer: str
+    messages: Annotated[list, add_messages]
+    standalone_question: str
+    route: str
 
     """
     GraphState es el "estado compartido" que va pasando por todo el flujo del pipeline. Está definido
@@ -56,5 +64,11 @@ Las casillas que tiene
 │ target_labels       │ Los labels elegidos por el retriever_router para la busqueda por similitud.  │
 ├─────────────────────┼─────────────────────────────────────────────────────────────────────────────┤
 │ answer              │ La respuesta generada por el modelo usando documents como contexto .                                       │
+├─────────────────────┼─────────────────────────────────────────────────────────────────────────────┤
+│ messages            │ Historial de la sesión (HumanMessage / AIMessage); se acumula.                │
+├─────────────────────┼─────────────────────────────────────────────────────────────────────────────┤
+│ standalone_question │ Pregunta reescrita, autocontenida, para Cypher/vector.                        │
+├─────────────────────┼─────────────────────────────────────────────────────────────────────────────┤
+│ route               │ Datasource del turno: "vector search" | "graph query" | "chat".                │
 └─────────────────────┴─────────────────────────────────────────────────────────────────────────────┘
 """

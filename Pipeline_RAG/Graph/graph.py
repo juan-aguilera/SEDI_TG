@@ -18,10 +18,10 @@ def route_question(state: GraphState):
     source = question_router.invoke({"question": question})
     if source.datasource == "vector search":
         print("---ROUTE QUESTION TO VECTOR SEARCH---")
-        return "decomposer and retriever router"
+        return DECOMPOSE_AND_ROUTE
     elif source.datasource == "graph query":
         print("---ROUTE QUESTION TO GRAPH QA---")
-        return "prompt_template"
+        return PROMPT_TEMPLATE
 
 workflow = StateGraph(GraphState)
 
@@ -45,8 +45,8 @@ workflow.add_node(GENERATE, generate)
 workflow.set_conditional_entry_point(
     route_question,
     {
-        'decomposer and retriever router': DECOMPOSE_AND_ROUTE, # vector search
-        'prompt_template': PROMPT_TEMPLATE # for graph qa
+        DECOMPOSE_AND_ROUTE: DECOMPOSE_AND_ROUTE,
+        PROMPT_TEMPLATE: PROMPT_TEMPLATE,
     },
 )
 

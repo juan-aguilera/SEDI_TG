@@ -5,12 +5,12 @@ from functools import wraps
 from langchain_neo4j import Neo4jGraph
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_openai import AzureChatOpenAI,AzureOpenAIEmbeddings
-
+from langgraph.graph.message import HumanMessage
 # Import Custom libraries
 from Chains.vector_graph_chain import get_vector_graph_chain
 from Chains.graph_qa_chain import get_graph_qa_chain, get_graph_qa_chain_with_context
 from Chains.decompose import query_analyzer
-from Chains.retriever_router import retriever_router as retriever_router_agent
+#from Chains.retriever_router import retriever_router as retriever_router_agent
 from Prompts.prompt_template import create_few_shot_prompt, create_few_shot_prompt_with_context
 from Prompts.prompt_examples import examples
 from Graph.state import GraphState
@@ -219,4 +219,8 @@ def generate(state: GraphState):
         "documents": state["documents"],
     })
     return {"answer": answer}
+
+@timed_node
+def ingest(state: GraphState):
+    return {"messages": [HumanMessage(content=state["question"])]}
 
