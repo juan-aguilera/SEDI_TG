@@ -1,8 +1,8 @@
-# Pipeline_RAG/Tools/session_memory.py
 import json
 from typing import Any
 
 
+# Claves que sirven para resolver "el primero" / "ese modelo" a un id real.
 _KEEP_KEYS = (
     "model_id",
     "node_id",
@@ -20,6 +20,7 @@ _KEEP_KEYS = (
     "label",
 )
 
+# Listas / blobs que inflan el digest y no hacen falta para reescribir.
 _DROP_KEYS = {
     "tags",
     "spaces",
@@ -39,7 +40,11 @@ def recent_messages(messages, n: int = 8) -> list:
 
 
 def messages_as_text(messages) -> str:
-    """Serializa rol + contenido para prompts con {chat_history} string."""
+    """Serializa rol + contenido para prompts que solo aceptan {chat_history} string.
+
+    El router y el rewrite no usan MessagesPlaceholder; este texto es lo que
+    van a interpolar. generate SÍ usa MessagesPlaceholder y no debe pasar por aquí.
+    """
     if not messages:
         return ""
     lines = []
@@ -53,7 +58,11 @@ def messages_as_text(messages) -> str:
 
 
 def documents_digest(documents, max_chars: int = 3000) -> str:
-    """JSON compacto de ids / nombres / conteos, numerado 1-based."""
+    """JSON compacto de ids / nombres / conteos, numerado 1-based.
+
+    Así el rewrite puede convertir "el primero" en un model_id concreto
+    sin mandar tags ni descripciones. Si no hay resultado, devuelve "".
+    """
     if not documents:
         return ""
     compact = _compact(documents)
@@ -85,7 +94,7 @@ def _message_content(msg) -> str:
 
 
 def _compact(value: Any) -> Any:
-    # GraphCypherQAChain return_direct=True: {"query": "...", "result": [filas]}
+    # GraphCypherQAChain con return_direct=True: {"query": "...", "result": [filas]}
     if isinstance(value, dict) and "result" in value:
         rows = value.get("result")
         digest = {"n": len(rows) if isinstance(rows, list) else 0}
@@ -95,10 +104,9 @@ def _compact(value: Any) -> Any:
         return digest
 
     if isinstance(value, list):
-        compacted_rows = [_compact_row(item) for item in value]
         return [
             {"rank": i, **row} if isinstance(row, dict) else {"rank": i, "value": row}
-            for i, row in enumerate(compacted_rows, start=1)
+            for i, row in enumerate((_compact_row(item) for item in value), start=1)
         ]
 
     if isinstance(value, dict):
@@ -117,6 +125,7 @@ def _compact_row(row: Any) -> Any:
             continue
         if _is_keep_key(key) or _looks_like_count(key, val):
             compact[key] = val
+    # Si no quedó nada útil (fila rara), no devolver vacío: un par de campos cortos.
     if not compact:
         for key, val in row.items():
             if _should_drop(key) or val is None:

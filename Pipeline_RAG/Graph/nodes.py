@@ -5,11 +5,11 @@ from functools import wraps
 from langchain_neo4j import Neo4jGraph
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_openai import AzureChatOpenAI,AzureOpenAIEmbeddings
-from langgraph.graph.message import HumanMessage
 # Import Custom libraries
 from Chains.vector_graph_chain import get_vector_graph_chain
 from Chains.graph_qa_chain import get_graph_qa_chain, get_graph_qa_chain_with_context
 from Chains.decompose import query_analyzer
+from Chains.router import question_router
 #from Chains.retriever_router import retriever_router as retriever_router_agent
 from Prompts.prompt_template import create_few_shot_prompt, create_few_shot_prompt_with_context
 from Prompts.prompt_examples import examples
@@ -19,6 +19,8 @@ from Indexes.index import ALL_LABELS  # fallback del retriever_router / vector_s
 from Chains.generate_answer import generate_answer
 from pydantic import BaseModel, Field                               # Para definir la "forma" de los datos de salida
 from Chains.retriever_router_and_decomposer import retriever_decompose_router 
+from Chains.rewrite import rewrite_chain
+from Tools.session_memory import recent_messages, messages_as_text, documents_digest
 neo4j_url = os.environ.get('NEO4J_URI')
 neo4j_user = os.environ.get('NEO4J_USER')
 neo4j_pwd = os.environ.get('NEO4J_PASSWORD')
@@ -57,7 +59,8 @@ def timed_node(func):
         print(f"--- {func.__name__} {time.perf_counter()-t0:.1f}s ---")
         return result
     return wrapper
-
+"""
+NODOS REMPLAZADO POR DECOMPOSE AND ROUTE
 
 @timed_node
 def decomposer(state: GraphState):
@@ -68,7 +71,6 @@ def decomposer(state: GraphState):
     question = state["question"]
     subqueries = query_analyzer.invoke(question)
     return {"subqueries": subqueries, "question":question}
-
 
 @timed_node
 def retriever_router(state: GraphState):
@@ -88,10 +90,15 @@ def retriever_router(state: GraphState):
         "subqueries": queries,
         "question": state["question"],
     }
+"""
+
+
+
+
 
 @timed_node
 def decompose_and_route(state: GraphState):
-    question = state["question"]
+    question = state.get("standalone_question") or state["question"]
     class SubQuery(BaseModel):
         sub_query: str = Field(
             ...,
@@ -159,7 +166,7 @@ def graph_qa(state: GraphState):
     ''' Returns a dictionary of at least one of the GraphState '''
     ''' Invoke a Graph QA Chain '''
     
-    question = state["question"]
+    question = state.get("standalone_question")
     
     graph_qa_chain = get_graph_qa_chain(state)
     
@@ -224,3 +231,19 @@ def generate(state: GraphState):
 def ingest(state: GraphState):
     return {"messages": [HumanMessage(content=state["question"])]}
 
+@timed_node
+def rewrite(state: GraphState):
+    question = state["question"]
+    prior = [m for m in (state.get("messages") or []) if not (
+        getattr(m, "type", None) == "human" and m.content == question
+    )]
+    if not prior:
+        standalone = question
+    else:
+        standalone = rewrite_chain.invoke({
+            "question": question,
+            "chat_history": messages_as_text(recent_messages(state.get("messages") or [])),
+            "documents_digest": documents_digest(state.get("documents")),
+        })
+    print(f"---REWRITE--- {standalone}")
+    return {"standalone_question": standalone, "question": question}
