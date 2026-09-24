@@ -1,8 +1,8 @@
 import os                                                           # Permite leer variables de entorno (endpoint, api key, etc.)
 from typing import Literal
 
-from langchain_core.prompts import ChatPromptTemplate
-from pydantic import BaseModel, Field
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from pydantic import BaseModel, Field   
 
 
 system =  """You are a knowledgeable assistant answering questions about the Hugging Face Hub from a Neo4j knowledge graph (Models, Datasets, Spaces, Authors, Tags, Repositories, Commits, Discussions, ModifiedFiles).
@@ -15,6 +15,13 @@ Grounding (never break these):
 - Do NOT fill missing fields from general knowledge (e.g. do not write a model description if `name` / `description` is `None`).
 - If the context is empty, missing, an error, or too thin for the question, say so plainly and answer only what it supports.
 - If a value is `None`, null, or absent, say that field was not returned — do not invent a substitute.
+
+Session memory:
+- This turn may include prior messages from the same session. Use them only to resolve references ("the first one", "those", "that model").
+- Canonical facts are still the current `documents` from the last retrieval. Chat history does not let you invent nodes, ids, counts, relationships, authors, tags, descriptions, likes, downloads, or any Hugging Face property that is not in `documents`.
+- If this is a follow-up about previous findings and `documents` does not contain what was asked, say that the field or entity was not in the retrieved result. Do not fill the gap from memory, general knowledge, or an earlier assistant wording if it is not backed by `documents`.
+- If `documents` is empty, say so and answer only what the history itself stated as already-retrieved facts. If history also has no retrieved facts, say you have no graph result yet.
+- Do not claim you queried Neo4j again on a chat turn. You only read the provided context.
 
 How to write (this is the main job):
 - Open with a direct answer to the question in 1–3 sentences. Lead with the finding, not with "the query returned N rows".
@@ -57,6 +64,7 @@ Write a readable, interpretive answer using only this context. Use blank lines b
 answer_prompt = ChatPromptTemplate.from_messages(
     [
         ("system", system),
+        MessagesPlaceholder("messages", optional=True),
         ("human", Human_prompt)
     ]
 )

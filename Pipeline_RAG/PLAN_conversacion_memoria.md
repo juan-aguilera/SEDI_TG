@@ -235,7 +235,7 @@ En [`Graph/graph.py`](Graph/graph.py), el condicional **después** de este nodo 
 
 Nuevo: [`Chains/rewrite.py`](Chains/rewrite.py)
 
-Modelo: el mismo `AzureChatOpenAI` que el decomposer (`AZURE_DECOMPOSER_DEPLOYMENT`), **sin** `temperature`. Salida: un string (o Pydantic de un campo `standalone_question`).
+Modelo: el mismo `AzureChatOpenAI` que el decomposer (`AZURE_DECOMPOSER_DEPLOYMENT`), **sin** `temperature++`. Salida: un string (o Pydantic de un campo `standalone_question`).
 
 Tarea: historial + digest + follow-up → **una pregunta autocontenida** en el mismo idioma.
 

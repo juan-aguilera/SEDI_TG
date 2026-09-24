@@ -151,3 +151,18 @@ def _looks_like_count(key: str, val) -> bool:
     if short.startswith("count") or short in {"n", "total"}:
         return True
     return isinstance(val, (int, float)) and short in {"downloads", "likes", "followers"}
+    
+def prior_messages_for_answer(messages, current_question: str) -> list:
+    """Historial sin el HumanMessage del turno actual (evita duplicar {question})."""
+    if not messages:
+        return []
+    prior = []
+    for msg in messages:
+        is_current_human = (
+            getattr(msg, "type", None) == "human"
+            and getattr(msg, "content", None) == current_question
+        )
+        if is_current_human:
+            continue
+        prior.append(msg)
+    return prior

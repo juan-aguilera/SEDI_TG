@@ -5,6 +5,7 @@ from functools import wraps
 from langchain_neo4j import Neo4jGraph
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_openai import AzureChatOpenAI,AzureOpenAIEmbeddings
+from langchain_core.messages import AIMessage, HumanMessage
 # Import Custom libraries
 from Chains.vector_graph_chain import get_vector_graph_chain
 from Chains.graph_qa_chain import get_graph_qa_chain, get_graph_qa_chain_with_context
@@ -20,7 +21,7 @@ from Chains.generate_answer import generate_answer
 from pydantic import BaseModel, Field                               # Para definir la "forma" de los datos de salida
 from Chains.retriever_router_and_decomposer import retriever_decompose_router 
 from Chains.rewrite import rewrite_chain
-from Tools.session_memory import recent_messages, messages_as_text, documents_digest
+from Tools.session_memory import recent_messages, messages_as_text, documents_digest,prior_messages_for_answer
 neo4j_url = os.environ.get('NEO4J_URI')
 neo4j_user = os.environ.get('NEO4J_USER')
 neo4j_pwd = os.environ.get('NEO4J_PASSWORD')
@@ -155,9 +156,9 @@ def prompt_template(state: GraphState):
     question = state["question"]
 
     # Create a prompt template
-    prompt = create_few_shot_prompt(schema)
+    #prompt = create_few_shot_prompt(schema)
     
-    return {"prompt": prompt, "question":question}
+    return {"question":question}
     
 
 @timed_node
@@ -167,7 +168,8 @@ def graph_qa(state: GraphState):
     ''' Invoke a Graph QA Chain '''
     
     question = state.get("standalone_question")
-    
+    if not isinstance(question, str) or not question.strip():
+        question = getattr(question, "standalone_question", question) or state["question"]
     graph_qa_chain = get_graph_qa_chain(state)
     
     result = graph_qa_chain.invoke(
@@ -177,7 +179,7 @@ def graph_qa(state: GraphState):
         },
     )
     return {"documents": result, "question":question}
-    
+ 
 @timed_node
 def prompt_template_with_context(state: GraphState):
     
@@ -188,9 +190,9 @@ def prompt_template_with_context(state: GraphState):
     queries = state["subqueries"]
 
     # Create a prompt template
-    prompt_with_context = create_few_shot_prompt_with_context(state,schema)
+    #prompt_with_context = create_few_shot_prompt_with_context(state,schema)
     
-    return {"prompt_with_context": prompt_with_context, "question":question, "subqueries": queries}
+    return {"question":question, "subqueries": queries}
 
 
 
@@ -202,7 +204,7 @@ def graph_qa_with_context(state: GraphState):
     
     question = state["question"]
     queries = state["subqueries"]
-    prompt_with_context = state["prompt_with_context"]
+    #prompt_with_context = state["prompt_with_context"]
     # decomposer no garantiza 2 subqueries; si solo hay una, usamos la pregunta original
     graph_query = queries[1].sub_query if len(queries) > 1 else question
 
@@ -215,17 +217,23 @@ def graph_qa_with_context(state: GraphState):
             "query": graph_query,
         },
     )
-    return {"documents": result, "prompt_with_context":prompt_with_context, "subqueries": queries}
+    return {"documents": result, "subqueries": queries}
 
 
 @timed_node
 def generate(state: GraphState):
     print("----GENERATE ANSWER----")
+    prior_only = prior_messages_for_answer(
+        state.get("messages") or [],
+        state["question"],
+    )
     answer = generate_answer({
         "question": state["question"],
-        "documents": state["documents"],
+        "documents": state.get("documents"),
+        "messages": prior_only,
     })
-    return {"answer": answer}
+    return {"answer": answer, "messages": [AIMessage(content=answer)]}
+
 
 @timed_node
 def ingest(state: GraphState):
@@ -240,10 +248,13 @@ def rewrite(state: GraphState):
     if not prior:
         standalone = question
     else:
-        standalone = rewrite_chain.invoke({
+        rewritten = rewrite_chain.invoke({
             "question": question,
             "chat_history": messages_as_text(recent_messages(state.get("messages") or [])),
             "documents_digest": documents_digest(state.get("documents")),
         })
+        standalone = getattr(rewritten, "standalone_question", rewritten)
+        if not isinstance(standalone, str):
+            standalone = question
     print(f"---REWRITE--- {standalone}")
     return {"standalone_question": standalone, "question": question}

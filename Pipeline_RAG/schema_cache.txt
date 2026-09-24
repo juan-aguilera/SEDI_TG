@@ -1,0 +1,25 @@
+Node properties:
+Repository {type: STRING, sha: STRING, author: STRING, likes: STRING, name: STRING, gated: STRING, private: STRING, card_data: STRING, disabled: STRING, id: STRING, last_modified: STRING, embedding: LIST}
+Author {avatar_url: STRING, is_pro: STRING, source: STRING, fullname: STRING, type: STRING, username: STRING, embedding: LIST}
+Dataset {downloads: STRING, dataset_id: STRING, paperswithcode_id: STRING, embedding: LIST, description: STRING, citation: STRING}
+Discussion {repo_id: STRING, author: STRING, num: STRING, created_at: STRING, title: STRING, status: STRING}
+Commits {insertions: STRING, deletions: STRING, repo_id: STRING, in_main_branch: STRING, author_date: STRING, author_tz: STRING, message: STRING, sha: STRING, author_name: STRING}
+Model {downloads: STRING, pipeline_tag: STRING, model_id: STRING, config: STRING, embedding: LIST}
+Tag {name: STRING, embedding: LIST}
+Space {stage: STRING, sdk: STRING, sleep_time: STRING, space_id: STRING, hardware: STRING, embedding: LIST}
+ModifiedFile {modified_file_id: STRING, nloc: STRING, new_path: STRING, rfilename: STRING, added_lines: STRING, deleted_lines: STRING, old_path: STRING, change_type: STRING, diff: STRING, repo_file_id: STRING}
+Relationship properties:
+HAS_CONFLICTING_FILE {repo_file_id: STRING, filename: STRING}
+The relationships:
+(:Repository)-[:HAS_TAG]->(:Tag)
+(:Repository)-[:CREATED_BY]->(:Author)
+(:Dataset)-[:IS_A]->(:Repository)
+(:Discussion)-[:CREATED_BY]->(:Author)
+(:Discussion)-[:BELONGS_TO]->(:Repository)
+(:Discussion)-[:HAS_CONFLICTING_FILE]->(:Repository)
+(:Commits)-[:AUTHORED_BY]->(:Author)
+(:Commits)-[:MODIFIES]->(:ModifiedFile)
+(:Model)-[:IS_A]->(:Repository)
+(:Space)-[:IS_A]->(:Repository)
+(:Space)-[:USES_MODEL]->(:Model)
+(:Space)-[:USES_DATASET]->(:Dataset)

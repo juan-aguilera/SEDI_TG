@@ -40,4 +40,5 @@ def generate_answer(inputs: dict) -> str:
     return generate_answer_chain.invoke({
         "question": inputs["question"],
         "documents": _to_text(inputs.get("documents")),
+        "messages": inputs.get("messages")
     })

@@ -1,6 +1,7 @@
 # Import Python Libraries
 from dotenv import load_dotenv
 from langgraph.graph import END, StateGraph
+from langgraph.checkpoint.memory import MemorySaver
 
 
 # Import Custom Libraries
@@ -9,6 +10,7 @@ from Graph.state import GraphState
 from Graph.labels import VECTOR_SEARCH, GRAPH_QA, GRAPH_QA_WITH_CONTEXT, PROMPT_TEMPLATE, PROMPT_TEMPLATE_WITH_CONTEXT, GENERATE, DECOMPOSE_AND_ROUTE, REWRITE_GRAPH, REWRITE_VECTOR, INGEST
 from Graph.nodes import vector_search, graph_qa, graph_qa_with_context, prompt_template, prompt_template_with_context, generate, decompose_and_route, rewrite, ingest
 from Tools.session_memory import recent_messages, messages_as_text, documents_digest
+
 
 
 load_dotenv()
@@ -78,6 +80,6 @@ workflow.add_edge(PROMPT_TEMPLATE, GRAPH_QA)
 workflow.add_edge(GRAPH_QA, GENERATE)
 workflow.add_edge(GENERATE, END)
 
-app = workflow.compile()
+app = workflow.compile(checkpointer=MemorySaver())
 
 #app.get_graph().draw_mermaid_png(output_file_path="graph.png")

@@ -23,11 +23,12 @@ from langchain_neo4j import Neo4jGraph, GraphCypherQAChain  # Neo4jGraph: conexi
                                                               # GraphCypherQAChain: arma la "cadena" completa pregunta -> Cypher -> respuesta.
 from langchain_openai import AzureChatOpenAI                       # Cliente para hablar con un deployment de Azure OpenAI
 
-
 # ── Importaciones propias del proyecto ──
 from Prompts.prompt_template import create_few_shot_prompt, create_few_shot_prompt_with_context  # Funciones que arman las instrucciones que se le dan al modelo (no se usan directamente en este archivo, se importan por si se necesitan)
 from Graph.state import GraphState           # Define la "forma" del estado que se pasa entre los pasos del flujo (question, prompt, documents, etc.)
 from Tools.sanitize_cypher import clip_to_single_statement
+from Tools.schema_cache import SCHEMA_PATH, load_or_fetch_schema
+
 
 # ── Nos conectamos a la base de datos Neo4j (instancia LOCAL, no AuraDB) ──
 # Estos datos (direccion, usuario, contrasena, nombre de la base) se leen
@@ -38,7 +39,9 @@ graph = Neo4jGraph(
     username=os.environ.get('NEO4J_USER'),    # Usuario para entrar a la base de datos
     password=os.environ.get('NEO4J_PASSWORD'),# Contrasena de ese usuario
     database=os.environ.get('NEO4J_DATABASE'),# Nombre de la base de datos dentro del servidor Neo4j
+    refresh_schema=True
 )
+schema = graph.get_schema
 
 # GraphCypherQAChain llama graph.query(cypher) tal cual. Si el LLM pego dos
 # sentencias o un RETURN a mitad de query, Neo4j tira 42I38. Recortamos aqui
@@ -79,8 +82,8 @@ def get_graph_qa_chain(state: GraphState):
     instrucciones armadas para el modelo).
     """
 
-    prompt = state["prompt"]   # Sacamos del estado las instrucciones (few-shot prompt) que le vamos a dar al modelo
-
+    #prompt = state["prompt"]   # Sacamos del estado las instrucciones (few-shot prompt) que le vamos a dar al modelo
+    prompt = create_few_shot_prompt(schema) 
     # GraphCypherQAChain.from_llm(...) arma toda la cadena de trabajo:
     # 1) usa 'cypher_llm' para convertir la pregunta en una consulta Cypher
     # 2) ejecuta esa consulta contra 'graph' (la base de datos Neo4j)
@@ -107,9 +110,7 @@ def get_graph_qa_chain_with_context(state: GraphState):
     sea mas preciso. Recibe 'state' para poder leer ese
     'prompt_with_context' ya armado.
     """
-
-    prompt_with_context = state["prompt_with_context"]  # Sacamos del estado las instrucciones que ya incluyen ese contexto extra
-
+    prompt_with_context = create_few_shot_prompt_with_context(state, schema)
     graph_qa_chain = GraphCypherQAChain.from_llm(
             cypher_llm = llm, #should use gpt-4 for production   # Modelo que genera la consulta Cypher (idealmente uno mas potente en produccion)
             qa_llm = llm,                   # Modelo que arma la respuesta final a partir del resultado
