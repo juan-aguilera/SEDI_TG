@@ -71,7 +71,7 @@ El enunciado nombra una entidad semilla. La respuesta está a **dos relaciones**
 
 ### 1. Autor de los modelos que usa un Space
 
-**Pregunta:** Who created the models used by the Space `huggingface/diffusers-demo`?
+**Pregunta:** Who created the models used by the Space `spaces/1PGAlt/audioEditing`?
 
 **Tipo:** bridge (HotpotQA / MuSiQue 2-hop)
 
