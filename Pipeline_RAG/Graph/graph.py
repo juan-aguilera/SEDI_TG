@@ -80,6 +80,15 @@ workflow.add_edge(PROMPT_TEMPLATE, GRAPH_QA)
 workflow.add_edge(GRAPH_QA, GENERATE)
 workflow.add_edge(GENERATE, END)
 
-app = workflow.compile(checkpointer=MemorySaver())
+def build_app(checkpointer=None):
+    """Compila el grafo. Sin argumento usa MemorySaver (el notebook).
+
+    El servidor web pasa un SqliteSaver para que cada thread_id sobreviva
+    al reinicio del proceso. Misma definición de nodos, otro almacén.
+    """
+    return workflow.compile(checkpointer=checkpointer or MemorySaver())
+
+
+app = build_app()
 
 #app.get_graph().draw_mermaid_png(output_file_path="graph.png")

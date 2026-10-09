@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GraphRAG</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <p class="brand">GraphRAG</p>
+        <button class="new-chat" id="new-chat" type="button">Nuevo chat</button>
+      </div>
+      <ul class="session-list" id="session-list" aria-label="Sesiones"></ul>
+    </aside>
+    <div class="backdrop" id="backdrop" hidden></div>
+    <main class="chat">
+      <header class="chat-header">
+        <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Abrir sesiones">Sesiones</button>
+        <h1 id="chat-title">GraphRAG</h1>
+      </header>
+      <div class="messages" id="messages" aria-live="polite"></div>
+      <form class="composer" id="composer">
+        <label class="sr-only" for="input">Mensaje</label>
+        <textarea id="input" rows="1" placeholder="Escribe una pregunta…" disabled></textarea>
+        <button id="send" type="submit" disabled>Enviar</button>
+      </form>
+    </main>
+  </div>
+  <script src="/vendor/marked.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
