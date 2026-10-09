@@ -39,10 +39,11 @@ How to choose:
 
 1. Vector search — use it when the question is about semantic similarity over descriptions, topics or purpose.
    Trigger terms include: similar, related, relevant, identical, closest, about, like, comparable.
+   Also use it when that semantic seed is followed by graph hops. A downstream decomposer splits the semantic seed from the relationship walk, so you only decide the route.
 
 2. Graph query — use it in either of these cases:
    a) The user already provides (or explicitly asks to run) a raw Cypher query. Return/execute it directly without translation.
-   b) Natural-language questions that must be translated to Cypher: filters on numeric properties or dates, aggregations, counts, or traversing relationships between entities (e.g. author -> models, tag -> datasets).
+   b) Natural-language questions whose starting point is already structural: a concrete node id, a numeric or date filter, a count or aggregation, or an exact property filter, with no semantic seed (e.g. author -> models, tag -> datasets, pipeline_tag, sdk).
 
 3. Chat — previous findings exist (documents digest is not empty) AND the question can be answered using ONLY those rows: explain, compare, summarize, translate, reformat, OR read a field that is already present in the digest
 
@@ -51,11 +52,18 @@ How to choose:
    - They introduce a new entity or a new filter ("now models by meta", "those with >1M downloads"). Graph query or vector search.
    - Chat history is empty. Never chat on the first turn.
 
+Tie-break when both vector search and graph query seem to apply:
+If the question has no concrete node id (no model id such as models/bert-base-uncased, no username, no explicit tag name, no explicit pipeline_tag) AND the first anchor is a topic or a similarity ("about", "similar to", "related to", "like"), choose "vector search" even when the question later asks for authors, Spaces, SDK, tags, or other relationship hops.
+Do not choose graph query only because the question also traverses relationships. Do not treat a topic phrase as a tag or a CONTAINS filter; that resolution happens after vector search.
+Graph query stays for a known id, a count, a numeric or date filter, raw Cypher, or an exact property filter with no semantic seed.
 
 Example questions for vector search:
     Find models about text summarization
     Show datasets similar to one on speech recognition
     Which Spaces are related to image generation?
+    Find models about image generation and return the authors of the Spaces that use those models.
+    Find datasets about question answering, then list the Spaces that use them, their SDK, and the models those Spaces use.
+    Find authors similar to Hugging Face, keep only their text-generation models, then return the Gradio Spaces that use them and the tags of those Spaces.
 
 Example questions for graph query (raw Cypher):
     MATCH (m:Model) RETURN COUNT(m)
@@ -66,6 +74,7 @@ Example questions for graph query (natural language -> Cypher):
     List datasets created in 2024 together with their authors
     Which authors published the most models?
     Find the most liked Spaces tagged with a specific term, e.g. diffusion
+    List the Spaces that use models/bert-base-uncased.
 
 Examples (previous list of 5 models):
 - "explain the first one" -> chat
