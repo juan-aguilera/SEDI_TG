@@ -1,5 +1,7 @@
 # Plan — Chat web con varias sesiones
 
+> Explicación en lenguaje sencillo: [EXPLICACION_PLAN_CHAT.md](EXPLICACION_PLAN_CHAT.md).
+>
 > El chat vive en `Frontend/`. El grafo sigue en `Pipeline_RAG/`. El notebook usa `MemorySaver`.
 
 El pipeline ya conversa. [`../Pipeline_RAG/Graph/graph.py`](../Pipeline_RAG/Graph/graph.py) compila el grafo con `MemorySaver` y el notebook llama `app.invoke({"question": text}, config={"configurable": {"thread_id": SESSION_ID}})`. Cada `thread_id` es una sesión (historial, `documents` y ruta `chat`). Esa memoria muere al cerrar el proceso y no hay lista de chats ni interfaz.
