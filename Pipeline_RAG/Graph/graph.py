@@ -83,8 +83,8 @@ workflow.add_edge(GENERATE, END)
 def build_app(checkpointer=None):
     """Compila el grafo. Sin argumento usa MemorySaver (el notebook).
 
-    El servidor web pasa un SqliteSaver para que cada thread_id sobreviva
-    al reinicio del proceso. Misma definición de nodos, otro almacén.
+    El chat en Frontend/ pasa un SqliteSaver para que cada thread_id
+    sobreviva al reinicio. Misma definición de nodos, otro almacén.
     """
     return workflow.compile(checkpointer=checkpointer or MemorySaver())
 

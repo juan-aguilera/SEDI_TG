@@ -1,14 +1,14 @@
 # Plan — Chat web con varias sesiones
 
-> Estado: **propuesta, no implementada**. FastAPI sirve la página y cada sesión es un `thread_id` persistido en SQLite. El notebook sigue usando `MemorySaver`.
+> El chat vive en `Frontend/`. El grafo sigue en `Pipeline_RAG/`. El notebook usa `MemorySaver`.
 
-El pipeline ya conversa. [`Graph/graph.py`](Graph/graph.py) compila el grafo con `MemorySaver` y el notebook llama `app.invoke({"question": text}, config={"configurable": {"thread_id": SESSION_ID}})`. Cada `thread_id` es una sesión (historial, `documents` y ruta `chat`). Esa memoria muere al cerrar el proceso y no hay lista de chats ni interfaz.
+El pipeline ya conversa. [`../Pipeline_RAG/Graph/graph.py`](../Pipeline_RAG/Graph/graph.py) compila el grafo con `MemorySaver` y el notebook llama `app.invoke({"question": text}, config={"configurable": {"thread_id": SESSION_ID}})`. Cada `thread_id` es una sesión (historial, `documents` y ruta `chat`). Esa memoria muere al cerrar el proceso y no hay lista de chats ni interfaz.
 
 El front no reimplementa el grafo. Lo envuelve.
 
 ```mermaid
 flowchart LR
-  UI[web/index.html] --> API[FastAPI]
+  UI[Frontend/web] --> API[Frontend/api]
   API --> Meta[(sessions.sqlite)]
   API --> Graph[build_app]
   Graph --> Ckpt[(checkpoints.sqlite)]
@@ -23,7 +23,7 @@ flowchart LR
 
 ## 1. Checkpointer intercambiable
 
-En [`Graph/graph.py`](Graph/graph.py), extraer la compilación:
+En [`../Pipeline_RAG/Graph/graph.py`](../Pipeline_RAG/Graph/graph.py), extraer la compilación:
 
 ```python
 def build_app(checkpointer=None):
@@ -32,11 +32,11 @@ def build_app(checkpointer=None):
 app = build_app()
 ```
 
-El API compila otra instancia con `SqliteSaver` (`langgraph-checkpoint-sqlite`). Misma definición de nodos, otro almacén. El archivo de checkpoints queda en `Pipeline_RAG/chat_data/checkpoints.sqlite` (gitignored).
+El API compila otra instancia con `SqliteSaver` (`langgraph-checkpoint-sqlite`). Misma definición de nodos, otro almacén. El archivo de checkpoints queda en `Frontend/chat_data/checkpoints.sqlite` (gitignored).
 
 ## 2. Metadatos de sesión
 
-`SqliteSaver` guarda el estado del grafo, no el título ni el orden de la barra lateral. Tabla aparte en `Pipeline_RAG/chat_data/sessions.sqlite`:
+`SqliteSaver` guarda el estado del grafo, no el título ni el orden de la barra lateral. Tabla aparte en `Frontend/chat_data/sessions.sqlite`:
 
 - `id` (uuid, es el `thread_id`)
 - `title` (arranca en “Nuevo chat”; al primer mensaje se reemplaza por el texto recortado a ~60 caracteres)
@@ -46,7 +46,7 @@ Borrar una sesión borra la fila y el thread del checkpointer (`delete_thread` s
 
 ## 3. API
 
-Nuevo [`api/server.py`](api/server.py), arrancado **desde** `Pipeline_RAG` para que los imports `Graph.*` / `Chains.*` y el `.env` de la raíz sigan igual que el notebook.
+Nuevo [`api/server.py`](api/server.py), arrancado **desde** `Frontend`. El servidor añade `Pipeline_RAG` al `sys.path` para importar `Graph.*` / `Chains.*`, y carga el `.env` de la raíz del repo.
 
 - `GET /api/sessions` — lista por `updated_at` descendente
 - `POST /api/sessions` — crea una sesión vacía (no llama al grafo)
@@ -64,8 +64,8 @@ Dependencias nuevas en [`requirements.txt`](../requirements.txt): `fastapi`, `uv
 Arranque:
 
 ```text
-cd Pipeline_RAG
-uvicorn api.server:app --port 8000
+cd Frontend
+python run_chat.py
 ```
 
 Un solo worker. La página queda en `http://localhost:8000`.

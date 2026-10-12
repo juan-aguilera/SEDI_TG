@@ -8,6 +8,7 @@ checkpointer.
 
 from __future__ import annotations
 
+import shutil
 import sqlite3
 import threading
 import uuid
@@ -17,10 +18,21 @@ from pathlib import Path
 DEFAULT_TITLE = "Nuevo chat"
 TITLE_LIMIT = 60
 
-PIPELINE_ROOT = Path(__file__).resolve().parent.parent
-CHAT_DATA_DIR = PIPELINE_ROOT / "chat_data"
+FRONTEND_ROOT = Path(__file__).resolve().parent.parent
+CHAT_DATA_DIR = FRONTEND_ROOT / "chat_data"
 SESSIONS_PATH = CHAT_DATA_DIR / "sessions.sqlite"
 CHECKPOINTS_PATH = CHAT_DATA_DIR / "checkpoints.sqlite"
+_LEGACY_CHAT_DATA = FRONTEND_ROOT.parent / "Pipeline_RAG" / "chat_data"
+
+
+def _migrate_legacy_chat_data() -> None:
+    """Si las sesiones quedaron en Pipeline_RAG/chat_data, pásalas a Frontend/."""
+    if CHAT_DATA_DIR.exists() or not _LEGACY_CHAT_DATA.exists():
+        return
+    shutil.copytree(_LEGACY_CHAT_DATA, CHAT_DATA_DIR)
+
+
+_migrate_legacy_chat_data()
 
 
 def title_from_question(text: str, limit: int = TITLE_LIMIT) -> str:

@@ -3,4 +3,5 @@ __pycache__/
 .env
 embeddings_out/
 *.parquet
+Frontend/chat_data/
 Pipeline_RAG/chat_data/

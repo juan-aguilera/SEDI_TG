@@ -4,7 +4,7 @@ En Windows, http://localhost a veces entra por IPv6 y uvicorn solo
 escucha 127.0.0.1, así que el navegador dice que no abre. Este script
 escucha en las dos.
 
-    cd Pipeline_RAG
+    cd Frontend
     python run_chat.py
 
 Luego abre http://127.0.0.1:8000
@@ -16,9 +16,12 @@ import socket
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+FRONTEND_ROOT = Path(__file__).resolve().parent
+PIPELINE_ROOT = FRONTEND_ROOT.parent / "Pipeline_RAG"
+for path in (FRONTEND_ROOT, PIPELINE_ROOT):
+    text = str(path)
+    if text not in sys.path:
+        sys.path.insert(0, text)
 
 
 def _listen(address: tuple, family: int, v6only: bool = False) -> socket.socket:
