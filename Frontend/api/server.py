@@ -1,12 +1,12 @@
 """Chat web sobre el grafo GraphRAG.
 
-Desde Pipeline_RAG:
+Desde Frontend:
 
     python run_chat.py
 
 La página queda en http://127.0.0.1:8000 y en http://localhost:8000.
-Cada sesión es un thread_id, persistido con SqliteSaver. El `app` que
-importa el notebook no se toca: sigue compilado con MemorySaver.
+El grafo sigue en Pipeline_RAG. Cada sesión es un thread_id persistido
+con SqliteSaver. El `app` que importa el notebook no se toca.
 
 La página se sirve enseguida. Neo4j y Azure se abren en la primera
 pregunta; si eso falla, el chat muestra el error en vez de dejar el
@@ -18,6 +18,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import sqlite3
+import sys
 import threading
 from pathlib import Path
 
@@ -34,8 +35,21 @@ from api.sessions_store import (
 
 logger = logging.getLogger("uvicorn.error")
 
-WEB_DIR = Path(__file__).resolve().parent.parent / "web"
-REPO_ROOT = Path(__file__).resolve().parents[2]
+FRONTEND_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = FRONTEND_ROOT.parent
+PIPELINE_ROOT = REPO_ROOT / "Pipeline_RAG"
+WEB_DIR = FRONTEND_ROOT / "web"
+
+
+def _ensure_import_paths() -> None:
+    """El front vive en Frontend/; Graph/Chains siguen en Pipeline_RAG."""
+    for path in (FRONTEND_ROOT, PIPELINE_ROOT):
+        text = str(path)
+        if text not in sys.path:
+            sys.path.insert(0, text)
+
+
+_ensure_import_paths()
 
 
 class RenameIn(BaseModel):
