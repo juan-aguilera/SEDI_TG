@@ -6,7 +6,7 @@ Desde Frontend:
 
 La página queda en http://127.0.0.1:8000 y en http://localhost:8000.
 El grafo sigue en Pipeline_RAG. Cada sesión es un thread_id persistido
-con SqliteSaver. El `app` que importa el notebook no se toca.
+con SqliteSaver.
 
 La página se sirve enseguida. Neo4j y Azure se abren en la primera
 pregunta; si eso falla, el chat muestra el error en vez de dejar el
