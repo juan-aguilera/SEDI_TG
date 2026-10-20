@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "SEDI_TG system overview",
+    "locale": "en",
+    "output": ".archify/architecture-sedi-tg-overview-20261019-213801/sedi-tg-overview.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/juan-aguilera/SEDI_TG.git",
+      "revision": "3f7b34607f1c5041c8fda19ed7d79c568f6fc182"
+    }
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "Researcher",
+      "sublabel": "Browser",
+      "pos": [40, 40],
+      "size": [120, 60]
+    },
+    {
+      "id": "chat-ui",
+      "type": "frontend",
+      "label": "Chat UI",
+      "sublabel": "Frontend/web",
+      "pos": [230, 40],
+      "size": [130, 60],
+      "sources": [
+        { "path": "Frontend/web/index.html", "line": 10, "end_line": 33 },
+        { "path": "Frontend/web/app.js", "line": 347, "end_line": 367 }
+      ]
+    },
+    {
+      "id": "fastapi",
+      "type": "backend",
+      "label": "FastAPI",
+      "sublabel": "chat API :8000",
+      "pos": [480, 40],
+      "size": [150, 64],
+      "sources": [
+        { "path": "Frontend/run_chat.py", "line": 37, "end_line": 62 },
+        { "path": "Frontend/api/server.py", "line": 106, "end_line": 137 },
+        { "path": "Frontend/api/server.py", "line": 162, "end_line": 168 }
+      ]
+    },
+    {
+      "id": "graphrag",
+      "type": "backend",
+      "label": "GraphRAG",
+      "sublabel": "Pipeline_RAG",
+      "pos": [740, 40],
+      "size": [150, 64],
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 35, "end_line": 91 },
+        { "path": "Frontend/api/server.py", "line": 276, "end_line": 286 },
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 165, "end_line": 181 }
+      ]
+    },
+    {
+      "id": "neo4j",
+      "type": "database",
+      "label": "Neo4j",
+      "sublabel": "HF Hub graph",
+      "pos": [1000, 40],
+      "size": [140, 64],
+      "sources": [
+        { "path": "Pipeline_RAG/Chains/graph_qa_chain.py", "line": 37, "end_line": 43 },
+        { "path": "Pipeline_RAG/Indexes/index.py", "line": 146, "end_line": 156 },
+        { "path": "Pipeline_embeddings/load_to_neo4j.py", "line": 45, "end_line": 78 }
+      ]
+    },
+    {
+      "id": "azure",
+      "type": "cloud",
+      "label": "Azure OpenAI",
+      "sublabel": "chat + embeddings",
+      "pos": [740, 200],
+      "size": [150, 64],
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 37, "end_line": 51 },
+        { "path": "Pipeline_embeddings/generate_embeddings.py", "line": 86, "end_line": 91 },
+        { "path": "Pipeline_embeddings/generate_embeddings.py", "line": 154, "end_line": 160 }
+      ]
+    },
+    {
+      "id": "embeddings",
+      "type": "backend",
+      "label": "Embeddings pipeline",
+      "sublabel": "Pipeline_embeddings",
+      "pos": [1000, 200],
+      "size": [140, 64],
+      "sources": [
+        { "path": "Pipeline_embeddings/generate_embeddings.py", "line": 1, "end_line": 12 },
+        { "path": "Pipeline_embeddings/generate_embeddings.py", "line": 166, "end_line": 223 },
+        { "path": "Pipeline_embeddings/load_to_neo4j.py", "line": 81, "end_line": 96 }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Chat process :8000",
+      "wraps": ["fastapi", "graphrag"]
+    },
+    {
+      "kind": "region",
+      "label": "Offline CLI",
+      "wraps": ["embeddings"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "user-to-ui",
+      "from": "user",
+      "to": "chat-ui",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "ui-to-api",
+      "from": "chat-ui",
+      "to": "fastapi",
+      "label": "POST /messages",
+      "variant": "emphasis"
+    },
+    {
+      "id": "api-to-graph",
+      "from": "fastapi",
+      "to": "graphrag",
+      "label": "invoke graph",
+      "variant": "emphasis"
+    },
+    {
+      "id": "graph-to-neo4j",
+      "from": "graphrag",
+      "to": "neo4j",
+      "label": "Cypher / kNN",
+      "variant": "emphasis"
+    },
+    {
+      "id": "graph-to-azure",
+      "from": "graphrag",
+      "to": "azure",
+      "label": "chat + embed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "emb-to-neo4j",
+      "from": "embeddings",
+      "to": "neo4j",
+      "label": "read / write vectors",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "emb-to-azure",
+      "from": "embeddings",
+      "to": "azure",
+      "label": "embed batches",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Frontend",
+      "items": [
+        "Static chat in Frontend/web, served by FastAPI on :8000",
+        "Each turn POSTs to /api/sessions/{id}/messages and invokes the compiled LangGraph app in-process",
+        "SQLite under Frontend/chat_data keeps session titles and LangGraph checkpoints"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Pipeline_RAG",
+      "items": [
+        "LangGraph router sends a turn to graph Cypher QA, vector-then-Cypher QA, or chat-only synthesis",
+        "Vector search reads the six Hub-label indexes already written by Pipeline_embeddings",
+        "Azure OpenAI generates Cypher, embeddings for the question, and the final answer"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Pipeline_embeddings",
+      "items": [
+        "Offline CLI: Stage 1 embeds Model, Dataset, Space, Repository, Author, and Tag nodes; Stage 2 writes vectors and cosine indexes back to Neo4j",
+        "This overview does not include how the Hub graph itself was first loaded into Neo4j"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "running",
+  "type": "architecture",
+  "quality": "showcase",
+  "startedAt": "2026-10-20T02:39:12.401Z",
+  "specification": {
+    "path": "G:\\My Drive\\MAESTRIA EN CIENCIA DE DATOS\\SEMI - PTG\\Repositorio Github\\SEDI_TG\\.archify\\architecture-sedi-tg-overview-20261019-213801\\candidate.json",
+    "sha256": "3e98b0067c09db7071f180dcb9a0e3c3e33dbd00311ce3f72dc19beb4f074e9d",
+    "bytes": 5879
+  },
+  "artifact": {
+    "path": "G:\\My Drive\\MAESTRIA EN CIENCIA DE DATOS\\SEMI - PTG\\Repositorio Github\\SEDI_TG\\.archify\\architecture-sedi-tg-overview-20261019-213801\\sedi-tg-overview.html"
+  },
+  "stages": {},
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "diagnostics": [],
+  "evidence": {
+    "receipt": "G:\\My Drive\\MAESTRIA EN CIENCIA DE DATOS\\SEMI - PTG\\Repositorio Github\\SEDI_TG\\.archify\\architecture-sedi-tg-overview-20261019-213801\\sedi-tg-overview.finalize.json",
+    "summaryReceipt": "G:\\My Drive\\MAESTRIA EN CIENCIA DE DATOS\\SEMI - PTG\\Repositorio Github\\SEDI_TG\\.archify\\architecture-sedi-tg-overview-20261019-213801\\sedi-tg-overview.finalize-summary.json"
+  },
+  "visualReview": "not-requested"
+}
