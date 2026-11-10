@@ -1,0 +1,278 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Pipeline_RAG graph and embeddings handshake",
+    "locale": "en",
+    "output": ".archify/workflow-pipeline-rag-20261019-220048/pipeline-rag-graph.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/juan-aguilera/SEDI_TG.git",
+      "revision": "3f7b34607f1c5041c8fda19ed7d79c568f6fc182"
+    }
+  },
+  "lanes": [
+    { "id": "offline", "label": "Pipeline_embeddings" },
+    { "id": "shared", "label": "LangGraph shared" },
+    { "id": "vector", "label": "vector search branch" },
+    { "id": "cypher", "label": "graph query branch" }
+  ],
+  "phases": [
+    { "id": "prepare", "label": "Offline indexes + ingest", "fromCol": 0, "toCol": 1, "variant": "dashed" },
+    { "id": "rewrite", "label": "Rewrite + decompose", "fromCol": 2, "toCol": 3 },
+    { "id": "retrieve", "label": "Retrieve + Cypher", "fromCol": 4, "toCol": 4, "variant": "emphasis" },
+    { "id": "answer", "label": "Answer", "fromCol": 5, "toCol": 5 }
+  ],
+  "groups": [
+    { "id": "offline-cli", "label": "Offline CLI", "lane": "offline", "fromCol": 0, "toCol": 2, "variant": "dashed" }
+  ],
+  "mainPath": [
+    "ingest",
+    "route",
+    "rewrite-vector",
+    "decompose",
+    "vector-search",
+    "prompt-ctx",
+    "qa-ctx",
+    "generate"
+  ],
+  "semanticChecks": {
+    "allowedRoots": ["generate-emb", "ingest"],
+    "allowedTerminals": ["generate"],
+    "requiredEdges": [
+      { "from": "load-neo4j", "to": "neo4j" },
+      { "from": "neo4j", "to": "vector-search" }
+    ],
+    "requiredPaths": [
+      { "from": "generate-emb", "to": "vector-search" }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "generate-emb",
+      "lane": "offline",
+      "col": 0,
+      "type": "backend",
+      "label": "generate_embeddings",
+      "sublabel": "page nodes, Azure embed, parquet",
+      "sources": [
+        { "path": "Pipeline_embeddings/generate_embeddings.py", "line": 1, "end_line": 12 },
+        { "path": "Pipeline_embeddings/generate_embeddings.py", "line": 126, "end_line": 138 },
+        { "path": "Pipeline_embeddings/generate_embeddings.py", "line": 154, "end_line": 160 }
+      ]
+    },
+    {
+      "id": "load-neo4j",
+      "lane": "offline",
+      "col": 1,
+      "type": "backend",
+      "label": "load_to_neo4j",
+      "sublabel": "embedding + vec_* index",
+      "sources": [
+        { "path": "Pipeline_embeddings/load_to_neo4j.py", "line": 35, "end_line": 59 },
+        { "path": "Pipeline_embeddings/load_to_neo4j.py", "line": 63, "end_line": 78 },
+        { "path": "Pipeline_embeddings/load_to_neo4j.py", "line": 81, "end_line": 96 }
+      ]
+    },
+    {
+      "id": "ingest",
+      "lane": "shared",
+      "col": 0,
+      "type": "backend",
+      "label": "ingest",
+      "sublabel": "append HumanMessage",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 52, "end_line": 54 },
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 238, "end_line": 240 }
+      ]
+    },
+    {
+      "id": "route",
+      "lane": "shared",
+      "col": 1,
+      "type": "backend",
+      "label": "route_question",
+      "sublabel": "vector | graph | chat",
+      "tag": "conditional",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 18, "end_line": 33 },
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 55, "end_line": 63 },
+        { "path": "Pipeline_RAG/Chains/router.py", "line": 9, "end_line": 15 }
+      ]
+    },
+    {
+      "id": "rewrite-vector",
+      "lane": "vector",
+      "col": 2,
+      "type": "backend",
+      "label": "rewrite_vector",
+      "sublabel": "standalone_question",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 45, "end_line": 45 },
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 70, "end_line": 70 },
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 242, "end_line": 260 }
+      ]
+    },
+    {
+      "id": "decompose",
+      "lane": "vector",
+      "col": 3,
+      "type": "backend",
+      "label": "decompose_and_route",
+      "sublabel": "similarity + Cypher + labels",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 71, "end_line": 71 },
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 100, "end_line": 124 },
+        { "path": "Pipeline_RAG/Chains/retriever_router_and_decomposer.py", "line": 11, "end_line": 18 }
+      ]
+    },
+    {
+      "id": "vector-search",
+      "lane": "vector",
+      "col": 4,
+      "type": "backend",
+      "label": "vector_search",
+      "sublabel": "kNN → context_refs",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 126, "end_line": 148 },
+        { "path": "Pipeline_RAG/Indexes/index.py", "line": 133, "end_line": 156 },
+        { "path": "Pipeline_RAG/Indexes/index.py", "line": 159, "end_line": 167 }
+      ]
+    },
+    {
+      "id": "prompt-ctx",
+      "lane": "vector",
+      "col": 5,
+      "type": "backend",
+      "label": "prompt_template_with_context",
+      "sublabel": "pass-through",
+      "yOffset": -55,
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 72, "end_line": 72 },
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 184, "end_line": 195 }
+      ]
+    },
+    {
+      "id": "qa-ctx",
+      "lane": "vector",
+      "col": 5,
+      "type": "backend",
+      "label": "graph_qa_with_context",
+      "sublabel": "Cypher using context_refs",
+      "yOffset": 55,
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 199, "end_line": 220 },
+        { "path": "Pipeline_RAG/Chains/graph_qa_chain.py", "line": 104, "end_line": 125 },
+        { "path": "Pipeline_RAG/Prompts/prompt_template.py", "line": 70, "end_line": 96 }
+      ]
+    },
+    {
+      "id": "rewrite-graph",
+      "lane": "cypher",
+      "col": 2,
+      "type": "backend",
+      "label": "rewrite_graph",
+      "sublabel": "same rewrite()",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 40, "end_line": 40 },
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 78, "end_line": 78 },
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 242, "end_line": 260 }
+      ]
+    },
+    {
+      "id": "prompt-t",
+      "lane": "cypher",
+      "col": 3,
+      "type": "backend",
+      "label": "prompt_template",
+      "sublabel": "pass-through",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 79, "end_line": 79 },
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 150, "end_line": 161 }
+      ]
+    },
+    {
+      "id": "graph-qa",
+      "lane": "cypher",
+      "col": 4,
+      "type": "backend",
+      "label": "graph_qa",
+      "sublabel": "NL → Cypher on Neo4j",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 164, "end_line": 181 },
+        { "path": "Pipeline_RAG/Chains/graph_qa_chain.py", "line": 76, "end_line": 102 }
+      ]
+    },
+    {
+      "id": "generate",
+      "lane": "shared",
+      "col": 5,
+      "type": "backend",
+      "label": "generate",
+      "sublabel": "synthesize answer",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 75, "end_line": 81 },
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 223, "end_line": 235 },
+        { "path": "Pipeline_RAG/Chains/generate_answer.py", "line": 39, "end_line": 44 }
+      ]
+    },
+    {
+      "id": "neo4j",
+      "lane": "offline",
+      "col": 2,
+      "type": "database",
+      "label": "Neo4j",
+      "sublabel": "Hub graph + vec_*_embedding",
+      "sources": [
+        { "path": "Pipeline_embeddings/load_to_neo4j.py", "line": 63, "end_line": 78 },
+        { "path": "Pipeline_RAG/Indexes/index.py", "line": 8, "end_line": 12 },
+        { "path": "Pipeline_RAG/Indexes/index.py", "line": 146, "end_line": 156 }
+      ]
+    }
+  ],
+  "edges": [
+    { "id": "emb-to-load", "from": "generate-emb", "to": "load-neo4j", "label": "parquet", "variant": "dashed", "role": "async" },
+    { "id": "load-to-neo4j", "from": "load-neo4j", "to": "neo4j", "label": "write embedding + index", "variant": "dashed", "role": "async" },
+    { "id": "ingest-to-route", "from": "ingest", "to": "route", "variant": "emphasis", "role": "main" },
+    { "id": "route-to-vector", "from": "route", "to": "rewrite-vector", "label": "vector search", "variant": "emphasis", "role": "main", "fromSide": "bottom", "toSide": "left" },
+    { "id": "route-to-graph", "from": "route", "to": "rewrite-graph", "label": "graph query", "role": "branch" },
+    { "id": "route-to-chat", "from": "route", "to": "generate", "label": "chat", "role": "branch" },
+    { "id": "rewrite-v-to-dec", "from": "rewrite-vector", "to": "decompose", "role": "main" },
+    { "id": "dec-to-search", "from": "decompose", "to": "vector-search", "role": "main" },
+    { "id": "search-to-prompt", "from": "vector-search", "to": "prompt-ctx", "role": "main", "fromSide": "right", "toSide": "left" },
+    { "id": "prompt-to-qactx", "from": "prompt-ctx", "to": "qa-ctx", "fromSide": "bottom", "toSide": "top", "role": "main" },
+    { "id": "qactx-to-gen", "from": "qa-ctx", "to": "generate", "role": "main", "fromSide": "right", "toSide": "bottom" },
+    { "id": "rewrite-g-to-prompt", "from": "rewrite-graph", "to": "prompt-t", "role": "branch" },
+    { "id": "prompt-to-gqa", "from": "prompt-t", "to": "graph-qa", "role": "branch" },
+    { "id": "gqa-to-gen", "from": "graph-qa", "to": "generate", "role": "branch", "fromSide": "right", "toSide": "right", "route": "outside-right" },
+    { "id": "neo4j-to-search", "from": "neo4j", "to": "vector-search", "label": "from_existing_index", "variant": "dashed", "role": "async", "fromSide": "bottom" }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "How the pipelines meet",
+      "items": [
+        "They never call each other. load_to_neo4j writes n.embedding and vec_<label>_embedding; vector_search only opens those indexes with Neo4jVector.from_existing_index",
+        "Both sides use the same six labels and the same text_props / AZURE_EMBEDDING_DEPLOYMENT, so the question vector sits in the same cosine space as the stored nodes",
+        "graph_qa and graph_qa_with_context query that same Neo4j graph with Cypher (structure and context_refs), not by calling Pipeline_embeddings"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "graph.py routes",
+      "items": [
+        "ingest is the only entry; route_question is a conditional edge, not an add_node",
+        "vector search: rewrite_vector → decompose_and_route → vector_search → prompt_template_with_context → graph_qa_with_context → generate",
+        "graph query: rewrite_graph → prompt_template → graph_qa → generate; chat skips retrieval and goes ingest → generate"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "What the thin nodes do",
+      "items": [
+        "prompt_template and prompt_template_with_context only forward state; the few-shot Cypher prompt is built inside get_graph_qa_chain[_with_context]",
+        "rewrite_vector and rewrite_graph are the same rewrite() function under two graph.py names"
+      ]
+    }
+  ]
+}
