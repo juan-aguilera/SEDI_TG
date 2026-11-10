@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "workflow",
+  "quality": "showcase",
+  "startedAt": "2026-11-08T13:25:33.533Z",
+  "specification": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+    "sha256": "5204107f79e9b76f18f5344a3c761047679c1bc5b5642e29f77b8a8cb5c0195a",
+    "bytes": 10361
+  },
+  "artifact": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-6\\ingest-session-memory.html"
+  },
+  "stages": {
+    "validate": {
+      "status": "fail",
+      "exitCode": 1,
+      "durationMs": null,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\LSCOLOMBIA\\.agents\\skills\\archify\\bin\\archify.mjs",
+        "deliver",
+        "workflow",
+        "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+        "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-6\\ingest-session-memory.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": false,
+        "command": "deliver",
+        "receiptId": "ed2e29c0-7ccf-438e-9a8d-0ac14ead8f08",
+        "stage": "render",
+        "type": "workflow",
+        "input": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+        "output": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-6\\ingest-session-memory.html",
+        "error": "Workflow layout validation failed:\n- [composition/ambiguous-corridor] showcase workflow edges[1] id \"to-route\" \"ingest\" -> \"route\" shares a 28px corridor with edges[8] id \"restore\" \"checkpointer\" -> \"route\" at [302.8, 244] -> [330.8, 244] (segments 0 and 2; minimum 8px) — if the authored route/fromSide/toSide are not required by the user, remove them so the renderer can re-plan; otherwise preserve that intent and adjust route/via, bias, or channel coordinates so unrelated edges do not visually merge.\n- [composition/arrowhead-collision] workflow arrows \"restore\" and \"to-route\" overlap at their destination (clearance 0px; minimum 11.2px).",
+        "diagnostics": [
+          {
+            "code": "composition/ambiguous-corridor",
+            "severity": "error",
+            "message": "[composition/ambiguous-corridor] showcase workflow edges[1] id \"to-route\" \"ingest\" -> \"route\" shares a 28px corridor with edges[8] id \"restore\" \"checkpointer\" -> \"route\" at [302.8, 244] -> [330.8, 244] (segments 0 and 2; minimum 8px) — if the authored route/fromSide/toSide are not required by the user, remove them so the renderer can re-plan; otherwise preserve that intent and adjust route/via, bias, or channel coordinates so unrelated edges do not visually merge.",
+            "subject": {
+              "diagramType": "workflow",
+              "collection": "edges",
+              "index": 1,
+              "id": "to-route",
+              "from": "ingest",
+              "to": "route"
+            },
+            "evidence": {
+              "otherRelationship": {
+                "diagramType": "workflow",
+                "collection": "edges",
+                "index": 8,
+                "id": "restore",
+                "from": "checkpointer",
+                "to": "route"
+              },
+              "overlapLengthPx": 28,
+              "minimumPx": 8,
+              "from": [
+                302.8,
+                244
+              ],
+              "to": [
+                330.8,
+                244
+              ],
+              "segmentIndex": 0,
+              "otherSegmentIndex": 2
+            },
+            "supportedFixes": [
+              "if the authored route/fromSide/toSide are not required by the user, remove them so the renderer can re-plan; otherwise preserve that intent and adjust route/via, bias, or channel coordinates so unrelated edges do not visually merge"
+            ]
+          },
+          {
+            "code": "composition/arrowhead-collision",
+            "severity": "error",
+            "message": "[composition/arrowhead-collision] workflow arrows \"restore\" and \"to-route\" overlap at their destination (clearance 0px; minimum 11.2px).",
+            "subject": {
+              "diagramType": "workflow",
+              "edge": "restore",
+              "from": "checkpointer",
+              "to": "route"
+            },
+            "evidence": {
+              "otherEdge": "to-route",
+              "distancePx": 0,
+              "minimumPx": 11.2
+            },
+            "supportedFixes": [
+              "use separate destination sides or ports with clearance for both arrow markers"
+            ]
+          }
+        ],
+        "provenance": "absent",
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      },
+      "execution": "embedded-in-deliver"
+    },
+    "deliver": {
+      "status": "not-run",
+      "execution": "blocked-by-validate"
+    }
+  },
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "diagnostics": [
+    {
+      "code": "composition/ambiguous-corridor",
+      "severity": "error",
+      "message": "[composition/ambiguous-corridor] showcase workflow edges[1] id \"to-route\" \"ingest\" -> \"route\" shares a 28px corridor with edges[8] id \"restore\" \"checkpointer\" -> \"route\" at [302.8, 244] -> [330.8, 244] (segments 0 and 2; minimum 8px) — if the authored route/fromSide/toSide are not required by the user, remove them so the renderer can re-plan; otherwise preserve that intent and adjust route/via, bias, or channel coordinates so unrelated edges do not visually merge.",
+      "subject": {
+        "diagramType": "workflow",
+        "collection": "edges",
+        "index": 1,
+        "id": "to-route",
+        "from": "ingest",
+        "to": "route"
+      },
+      "evidence": {
+        "otherRelationship": {
+          "diagramType": "workflow",
+          "collection": "edges",
+          "index": 8,
+          "id": "restore",
+          "from": "checkpointer",
+          "to": "route"
+        },
+        "overlapLengthPx": 28,
+        "minimumPx": 8,
+        "from": [
+          302.8,
+          244
+        ],
+        "to": [
+          330.8,
+          244
+        ],
+        "segmentIndex": 0,
+        "otherSegmentIndex": 2
+      },
+      "supportedFixes": [
+        "if the authored route/fromSide/toSide are not required by the user, remove them so the renderer can re-plan; otherwise preserve that intent and adjust route/via, bias, or channel coordinates so unrelated edges do not visually merge"
+      ]
+    },
+    {
+      "code": "composition/arrowhead-collision",
+      "severity": "error",
+      "message": "[composition/arrowhead-collision] workflow arrows \"restore\" and \"to-route\" overlap at their destination (clearance 0px; minimum 11.2px).",
+      "subject": {
+        "diagramType": "workflow",
+        "edge": "restore",
+        "from": "checkpointer",
+        "to": "route"
+      },
+      "evidence": {
+        "otherEdge": "to-route",
+        "distancePx": 0,
+        "minimumPx": 11.2
+      },
+      "supportedFixes": [
+        "use separate destination sides or ports with clearance for both arrow markers"
+      ]
+    }
+  ],
+  "evidence": {
+    "receipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-6\\ingest-session-memory.finalize.json",
+    "summaryReceipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-6\\ingest-session-memory.finalize-summary.json"
+  },
+  "visualReview": "not-requested",
+  "failedStage": "validate",
+  "finishedAt": "2026-11-08T13:25:34.384Z",
+  "durationMs": 850,
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-08T12:59:01.842Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  }
+}

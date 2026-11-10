@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "workflow",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+    "sha256": "e3b0f4e916bbf3b5ac473171663ec276d5f74e0a1a08eb920ea957f19572b1f7",
+    "bytes": 10290
+  },
+  "artifact": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\ingest-session-memory.html"
+  },
+  "gates": {
+    "validate": "fail",
+    "deliver": "not-run",
+    "check": "not-run",
+    "browser-check": "not-run"
+  },
+  "failedStage": "validate",
+  "diagnostics": [
+    {
+      "code": "composition/proper-crossing",
+      "severity": "error",
+      "message": "[composition/proper-crossing] showcase workflow edges[3] id \"to-vector\" \"route\" -> \"rewrite_vector\" crosses edges[8] id \"restore\" \"checkpointer\" -> \"route\" at [376.8, 362] (segments 3 and 0) — adjust route/via, bias, or channel coordinates so the edges use separate lane corridors.",
+      "subject": {
+        "diagramType": "workflow",
+        "collection": "edges",
+        "index": 3,
+        "id": "to-vector",
+        "from": "route",
+        "to": "rewrite_vector"
+      },
+      "evidence": {
+        "otherRelationship": {
+          "diagramType": "workflow",
+          "collection": "edges",
+          "index": 8,
+          "id": "restore",
+          "from": "checkpointer",
+          "to": "route"
+        },
+        "point": [
+          376.79999999999995,
+          362
+        ],
+        "segmentIndex": 3,
+        "otherSegmentIndex": 0
+      },
+      "supportedFixes": [
+        "adjust route/via, bias, or channel coordinates so the edges use separate lane corridors"
+      ]
+    }
+  ],
+  "diagnosticSummary": {
+    "total": 1,
+    "shown": 1,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\ingest-session-memory.finalize.json",
+    "summaryReceipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\ingest-session-memory.finalize-summary.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-08T12:59:01.842Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 1138,
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "nextAction": {
+    "action": "edit-in-place",
+    "candidate": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+    "constraint": "Preserve unaffected semantics and geometry; apply each diagnostic's supportedFixes, or the fix its message names, and do not replace the whole candidate.",
+    "then": "finalize-once"
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "workflow",
+  "quality": "showcase",
+  "startedAt": "2026-11-08T13:26:19.003Z",
+  "specification": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+    "sha256": "00622ad103851e2f59d46d2df0c7a8258cc4e8d783877e0b1779e2835f907af3",
+    "bytes": 10360
+  },
+  "artifact": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-7\\ingest-session-memory.html"
+  },
+  "stages": {
+    "validate": {
+      "status": "fail",
+      "exitCode": 1,
+      "durationMs": null,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\LSCOLOMBIA\\.agents\\skills\\archify\\bin\\archify.mjs",
+        "deliver",
+        "workflow",
+        "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+        "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-7\\ingest-session-memory.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": false,
+        "command": "deliver",
+        "receiptId": "1df73afa-27c2-4e73-aa28-2a5b98e3e20f",
+        "stage": "render",
+        "type": "workflow",
+        "input": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+        "output": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-7\\ingest-session-memory.html",
+        "error": "Workflow edge \"restore\" cannot satisfy route preset \"return-left\": candidate violates perpendicular endpoint-side direction.",
+        "diagnostics": [
+          {
+            "code": "workflow/route-preset-conflict",
+            "severity": "error",
+            "message": "Workflow edge \"restore\" cannot satisfy route preset \"return-left\": candidate violates perpendicular endpoint-side direction.",
+            "subject": {
+              "diagramType": "workflow",
+              "edge": "restore",
+              "from": "checkpointer",
+              "to": "route",
+              "route": "return-left"
+            },
+            "evidence": {
+              "invariant": "perpendicular endpoint-side direction",
+              "attemptedCandidateFamily": "return-left",
+              "points": [
+                [
+                  330.8,
+                  644
+                ],
+                [
+                  302.8,
+                  644
+                ],
+                [
+                  302.8,
+                  210
+                ],
+                [
+                  376.8,
+                  210
+                ]
+              ],
+              "fromSide": "left",
+              "toSide": "top",
+              "requiredEndpointStubPx": 8,
+              "requiredInteriorSegmentPx": 16,
+              "requiredDirectClearancePx": 28
+            },
+            "supportedFixes": []
+          }
+        ],
+        "provenance": "absent",
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      },
+      "execution": "embedded-in-deliver"
+    },
+    "deliver": {
+      "status": "not-run",
+      "execution": "blocked-by-validate"
+    }
+  },
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "diagnostics": [
+    {
+      "code": "workflow/route-preset-conflict",
+      "severity": "error",
+      "message": "Workflow edge \"restore\" cannot satisfy route preset \"return-left\": candidate violates perpendicular endpoint-side direction.",
+      "subject": {
+        "diagramType": "workflow",
+        "edge": "restore",
+        "from": "checkpointer",
+        "to": "route",
+        "route": "return-left"
+      },
+      "evidence": {
+        "invariant": "perpendicular endpoint-side direction",
+        "attemptedCandidateFamily": "return-left",
+        "points": [
+          [
+            330.8,
+            644
+          ],
+          [
+            302.8,
+            644
+          ],
+          [
+            302.8,
+            210
+          ],
+          [
+            376.8,
+            210
+          ]
+        ],
+        "fromSide": "left",
+        "toSide": "top",
+        "requiredEndpointStubPx": 8,
+        "requiredInteriorSegmentPx": 16,
+        "requiredDirectClearancePx": 28
+      },
+      "supportedFixes": []
+    }
+  ],
+  "evidence": {
+    "receipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-7\\ingest-session-memory.finalize.json",
+    "summaryReceipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-7\\ingest-session-memory.finalize-summary.json"
+  },
+  "visualReview": "not-requested",
+  "failedStage": "validate",
+  "finishedAt": "2026-11-08T13:26:19.848Z",
+  "durationMs": 845,
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-08T12:59:01.842Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  }
+}

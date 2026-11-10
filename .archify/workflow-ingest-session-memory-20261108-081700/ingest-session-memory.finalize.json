@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "running",
+  "type": "workflow",
+  "quality": "showcase",
+  "startedAt": "2026-11-08T13:20:37.519Z",
+  "specification": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+    "sha256": "31f9c046a73815f960c6ffdcb5ec3a3291f3fdb079499ed913a58b8905c5ee6b",
+    "bytes": 10422
+  },
+  "artifact": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\ingest-session-memory.html"
+  },
+  "stages": {},
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "diagnostics": [],
+  "evidence": {
+    "receipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\ingest-session-memory.finalize.json",
+    "summaryReceipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\ingest-session-memory.finalize-summary.json"
+  },
+  "visualReview": "not-requested"
+}

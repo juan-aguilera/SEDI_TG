@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "workflow",
+  "quality": "showcase",
+  "startedAt": "2026-11-08T13:21:44.296Z",
+  "specification": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+    "sha256": "49dbeb49c73bccffcf8d6298902cc9fd84eadf5f6a4c615408ba8d4891910471",
+    "bytes": 10431
+  },
+  "artifact": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-2\\ingest-session-memory.html"
+  },
+  "stages": {
+    "validate": {
+      "status": "fail",
+      "exitCode": 1,
+      "durationMs": null,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\LSCOLOMBIA\\.agents\\skills\\archify\\bin\\archify.mjs",
+        "deliver",
+        "workflow",
+        "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+        "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-2\\ingest-session-memory.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": false,
+        "command": "deliver",
+        "receiptId": "0977505b-61a3-4acd-adfd-f95217573fae",
+        "stage": "render",
+        "type": "workflow",
+        "input": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+        "output": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-2\\ingest-session-memory.html",
+        "error": "Workflow edge \"to-vector\" cannot satisfy route preset \"drop\": candidate violates edge-label node clearance: its label intersects node \"route\".",
+        "diagnostics": [
+          {
+            "code": "workflow/route-preset-conflict",
+            "severity": "error",
+            "message": "Workflow edge \"to-vector\" cannot satisfy route preset \"drop\": candidate violates edge-label node clearance: its label intersects node \"route\".",
+            "subject": {
+              "diagramType": "workflow",
+              "edge": "to-vector",
+              "from": "route",
+              "to": "rewrite_vector",
+              "route": "drop"
+            },
+            "evidence": {
+              "invariant": "edge-label node clearance",
+              "labelRect": {
+                "x": 397.00000000000006,
+                "y": 267,
+                "width": 96.39999999999999,
+                "height": 14
+              },
+              "obstacleNode": "route",
+              "attemptedCandidateFamily": "drop",
+              "points": [
+                [
+                  376.8,
+                  278
+                ],
+                [
+                  376.8,
+                  287
+                ],
+                [
+                  513.6,
+                  287
+                ],
+                [
+                  513.6,
+                  343
+                ]
+              ],
+              "fromSide": "bottom",
+              "toSide": "top",
+              "requiredEndpointStubPx": 8,
+              "requiredInteriorSegmentPx": 16,
+              "requiredDirectClearancePx": 28
+            },
+            "supportedFixes": []
+          }
+        ],
+        "provenance": "absent",
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      },
+      "execution": "embedded-in-deliver"
+    },
+    "deliver": {
+      "status": "not-run",
+      "execution": "blocked-by-validate"
+    }
+  },
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "diagnostics": [
+    {
+      "code": "workflow/route-preset-conflict",
+      "severity": "error",
+      "message": "Workflow edge \"to-vector\" cannot satisfy route preset \"drop\": candidate violates edge-label node clearance: its label intersects node \"route\".",
+      "subject": {
+        "diagramType": "workflow",
+        "edge": "to-vector",
+        "from": "route",
+        "to": "rewrite_vector",
+        "route": "drop"
+      },
+      "evidence": {
+        "invariant": "edge-label node clearance",
+        "labelRect": {
+          "x": 397.00000000000006,
+          "y": 267,
+          "width": 96.39999999999999,
+          "height": 14
+        },
+        "obstacleNode": "route",
+        "attemptedCandidateFamily": "drop",
+        "points": [
+          [
+            376.8,
+            278
+          ],
+          [
+            376.8,
+            287
+          ],
+          [
+            513.6,
+            287
+          ],
+          [
+            513.6,
+            343
+          ]
+        ],
+        "fromSide": "bottom",
+        "toSide": "top",
+        "requiredEndpointStubPx": 8,
+        "requiredInteriorSegmentPx": 16,
+        "requiredDirectClearancePx": 28
+      },
+      "supportedFixes": []
+    }
+  ],
+  "evidence": {
+    "receipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-2\\ingest-session-memory.finalize.json",
+    "summaryReceipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-2\\ingest-session-memory.finalize-summary.json"
+  },
+  "visualReview": "not-requested",
+  "failedStage": "validate",
+  "finishedAt": "2026-11-08T13:21:45.574Z",
+  "durationMs": 1278,
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-08T12:59:01.842Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  }
+}

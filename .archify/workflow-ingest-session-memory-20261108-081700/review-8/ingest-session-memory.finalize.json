@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "workflow",
+  "quality": "showcase",
+  "startedAt": "2026-11-08T13:26:56.388Z",
+  "specification": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+    "sha256": "3e7fb63c1d929531d5be4624a66733c34f25196f5bd1b8fff59a8933023b7691",
+    "bytes": 10336
+  },
+  "artifact": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-8\\ingest-session-memory.html"
+  },
+  "stages": {
+    "validate": {
+      "status": "fail",
+      "exitCode": 1,
+      "durationMs": null,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\LSCOLOMBIA\\.agents\\skills\\archify\\bin\\archify.mjs",
+        "deliver",
+        "workflow",
+        "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+        "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-8\\ingest-session-memory.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": false,
+        "command": "deliver",
+        "receiptId": "58f6ff52-38a4-4408-9c7c-8fa1dcf13095",
+        "stage": "render",
+        "type": "workflow",
+        "input": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\candidate.json",
+        "output": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-8\\ingest-session-memory.html",
+        "error": "Workflow edge \"restore\" has explicit geometry that violates readable route feasibility with authored endpoint sides.",
+        "diagnostics": [
+          {
+            "code": "workflow/explicit-pin-conflict",
+            "severity": "error",
+            "message": "Workflow edge \"restore\" has explicit geometry that violates readable route feasibility with authored endpoint sides.",
+            "subject": {
+              "diagramType": "workflow",
+              "edge": "restore",
+              "from": "checkpointer",
+              "to": "route",
+              "path": "/edges/8/toSide"
+            },
+            "evidence": {
+              "invariant": "readable route feasibility with authored endpoint sides",
+              "conflictingPins": [
+                {
+                  "edge": "restore",
+                  "field": "toSide",
+                  "path": "/edges/8/toSide",
+                  "value": "top"
+                }
+              ],
+              "actualCoordinates": {
+                "sourceAnchor": [
+                  330.8,
+                  680
+                ],
+                "targetAnchor": [
+                  376.8,
+                  222
+                ]
+              },
+              "fromSide": "left",
+              "toSide": "top",
+              "attemptedCandidateFamilies": [
+                "facing-straight",
+                "horizontal-then-vertical",
+                "vertical-then-horizontal",
+                "lane-gap-corridor",
+                "column-gap-corridor",
+                "outside-left",
+                "outside-right",
+                "top-corridor",
+                "bottom-corridor",
+                "lane-gap-corridor",
+                "column-gap-corridor",
+                "lane-gap-corridor",
+                "column-gap-corridor",
+                "lane-gap-corridor",
+                "column-gap-corridor",
+                "lane-gap-corridor",
+                "column-gap-corridor"
+              ],
+              "candidateCount": 17
+            },
+            "supportedFixes": [
+              "remove toSide from edge \"restore\" so readable-v2 can replan the remaining endpoint-side pins"
+            ]
+          }
+        ],
+        "provenance": "absent",
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      },
+      "execution": "embedded-in-deliver"
+    },
+    "deliver": {
+      "status": "not-run",
+      "execution": "blocked-by-validate"
+    }
+  },
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "diagnostics": [
+    {
+      "code": "workflow/explicit-pin-conflict",
+      "severity": "error",
+      "message": "Workflow edge \"restore\" has explicit geometry that violates readable route feasibility with authored endpoint sides.",
+      "subject": {
+        "diagramType": "workflow",
+        "edge": "restore",
+        "from": "checkpointer",
+        "to": "route",
+        "path": "/edges/8/toSide"
+      },
+      "evidence": {
+        "invariant": "readable route feasibility with authored endpoint sides",
+        "conflictingPins": [
+          {
+            "edge": "restore",
+            "field": "toSide",
+            "path": "/edges/8/toSide",
+            "value": "top"
+          }
+        ],
+        "actualCoordinates": {
+          "sourceAnchor": [
+            330.8,
+            680
+          ],
+          "targetAnchor": [
+            376.8,
+            222
+          ]
+        },
+        "fromSide": "left",
+        "toSide": "top",
+        "attemptedCandidateFamilies": [
+          "facing-straight",
+          "horizontal-then-vertical",
+          "vertical-then-horizontal",
+          "lane-gap-corridor",
+          "column-gap-corridor",
+          "outside-left",
+          "outside-right",
+          "top-corridor",
+          "bottom-corridor",
+          "lane-gap-corridor",
+          "column-gap-corridor",
+          "lane-gap-corridor",
+          "column-gap-corridor",
+          "lane-gap-corridor",
+          "column-gap-corridor",
+          "lane-gap-corridor",
+          "column-gap-corridor"
+        ],
+        "candidateCount": 17
+      },
+      "supportedFixes": [
+        "remove toSide from edge \"restore\" so readable-v2 can replan the remaining endpoint-side pins"
+      ]
+    }
+  ],
+  "evidence": {
+    "receipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-8\\ingest-session-memory.finalize.json",
+    "summaryReceipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-081700\\review-8\\ingest-session-memory.finalize-summary.json"
+  },
+  "visualReview": "not-requested",
+  "failedStage": "validate",
+  "finishedAt": "2026-11-08T13:26:57.742Z",
+  "durationMs": 1354,
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-08T12:59:01.842Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  }
+}

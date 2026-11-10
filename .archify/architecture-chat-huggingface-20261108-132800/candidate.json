@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Chat sobre el grafo de Hugging Face",
+    "locale": "es",
+    "quality_profile": "showcase",
+    "output": ".archify/architecture-chat-huggingface-20261108-132800/chat-huggingface.html",
+    "repository": {
+      "url": "https://github.com/juan-aguilera/SEDI_TG.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "3f7b34607f1c5041c8fda19ed7d79c568f6fc182"
+    }
+  },
+  "components": [
+    {
+      "id": "browser",
+      "type": "frontend",
+      "label": "Navegador",
+      "sublabel": "burbujas, markdown, #id",
+      "pos": [40, 200],
+      "size": [150, 76],
+      "sources": [
+        { "path": "Frontend/web/app.js", "line": 363, "end_line": 367 },
+        { "path": "Frontend/web/app.js", "line": 188, "end_line": 216 },
+        { "path": "Frontend/web/app.js", "line": 277, "end_line": 322 }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "FastAPI",
+      "sublabel": "Uvicorn :8000",
+      "tag": "REST y estáticos",
+      "pos": [310, 200],
+      "size": [270, 76],
+      "sources": [
+        { "path": "Frontend/run_chat.py", "line": 19, "end_line": 62 },
+        { "path": "Frontend/api/server.py", "line": 68, "end_line": 145 },
+        { "path": "Frontend/api/server.py", "line": 162, "end_line": 168 }
+      ]
+    },
+    {
+      "id": "graph",
+      "type": "backend",
+      "label": "LangGraph",
+      "sublabel": "lee .env al cargar",
+      "tag": "1.ª pregunta",
+      "pos": [720, 164],
+      "size": [190, 148],
+      "sources": [
+        { "path": "Frontend/api/server.py", "line": 245, "end_line": 286 },
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 18, "end_line": 89 },
+        { "path": "Pipeline_RAG/Chains/router.py", "line": 33, "end_line": 53 }
+      ]
+    },
+    {
+      "id": "sessions",
+      "type": "database",
+      "label": "sessions.sqlite",
+      "sublabel": "id, título, fechas",
+      "pos": [350, 430],
+      "size": [190, 68],
+      "sources": [
+        { "path": "Frontend/api/sessions_store.py", "line": 22, "end_line": 24 },
+        { "path": "Frontend/api/sessions_store.py", "line": 60, "end_line": 70 },
+        { "path": "Frontend/api/sessions_store.py", "line": 83, "end_line": 101 }
+      ]
+    },
+    {
+      "id": "checkpoints",
+      "type": "database",
+      "label": "checkpoints.sqlite",
+      "sublabel": "messages, documents",
+      "pos": [705, 430],
+      "size": [220, 72],
+      "sources": [
+        { "path": "Frontend/api/server.py", "line": 268, "end_line": 273 },
+        { "path": "Frontend/api/server.py", "line": 148, "end_line": 158 },
+        { "path": "Frontend/api/server.py", "line": 183, "end_line": 200 }
+      ]
+    },
+    {
+      "id": "neo4j",
+      "type": "database",
+      "label": "Neo4j",
+      "sublabel": "Hugging Face Hub",
+      "pos": [1034, 164],
+      "size": [160, 60],
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 25, "end_line": 35 },
+        { "path": "Pipeline_RAG/Chains/graph_qa_chain.py", "line": 33, "end_line": 43 }
+      ]
+    },
+    {
+      "id": "azure",
+      "type": "cloud",
+      "label": "Azure OpenAI",
+      "sublabel": "chat y embeddings",
+      "pos": [1034, 252],
+      "size": [160, 60],
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 37, "end_line": 51 },
+        { "path": "Pipeline_RAG/Chains/router.py", "line": 17, "end_line": 24 },
+        { "path": "Pipeline_RAG/Chains/rewrite.py", "line": 9, "end_line": 36 }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Proceso Python",
+      "wraps": ["api", "graph"],
+      "pad": 16
+    }
+  ],
+  "connections": [
+    {
+      "id": "ask",
+      "from": "browser",
+      "to": "api",
+      "label": "POST /messages",
+      "variant": "emphasis"
+    },
+    {
+      "id": "page",
+      "from": "api",
+      "to": "browser",
+      "label": "página y JSON",
+      "fromSide": "top",
+      "toSide": "top"
+    },
+    {
+      "id": "invoke",
+      "from": "api",
+      "to": "graph",
+      "label": "invoke(pregunta)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "answer",
+      "from": "graph",
+      "to": "api",
+      "label": "content, route",
+      "fromSide": "top",
+      "toSide": "top"
+    },
+    {
+      "id": "ficha",
+      "from": "api",
+      "to": "sessions",
+      "label": "ficha",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "persist",
+      "from": "graph",
+      "to": "checkpoints",
+      "label": "snapshot",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "drop",
+      "from": "api",
+      "to": "checkpoints",
+      "label": "borra hilo",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "query",
+      "from": "graph",
+      "to": "neo4j",
+      "label": "si no es chat",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "llm",
+      "from": "graph",
+      "to": "azure",
+      "label": "LLM",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Mismo proceso",
+      "items": [
+        "FastAPI importa Graph.graph y llama invoke; no hay un front en Node",
+        "run_chat.py suma Frontend/ y Pipeline_RAG/ al path y escucha :8000 en IPv4 e IPv6",
+        "Un candado serializa los invoke; el resto de la API sigue respondiendo",
+        "_LazyGraph abre Neo4j y Azure en la primera pregunta, después de leer .env"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Dos SQLite",
+      "items": [
+        "sessions.sqlite guarda id, título y fechas; POST /api/sessions no llama al grafo",
+        "checkpoints.sqlite (SqliteSaver) guarda el estado por thread_id, el mismo UUID",
+        "invoke envía solo question: reenviar documents pisaría el checkpoint",
+        "DELETE borra la ficha y el hilo"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Rutas del turno",
+      "items": [
+        "El enrutador elige vector search, graph query o chat",
+        "Chat exige digest con filas y que el campo pedido ya esté ahí",
+        "Si el campo falta, la ruta es el grafo y rewrite sustituye la referencia por un id del digest",
+        "La burbuja muestra la ruta solo en el último asistente; marked.min.js pinta el markdown"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Límites",
+      "items": [
+        "No hay autenticación: quien abre esta instancia ve las mismas sesiones",
+        "La respuesta vuelve completa; no hay tokens a medida que se generan",
+        "Si Azure o Neo4j fallan, la API responde 500 y no revierte el turno"
+      ]
+    }
+  ]
+}

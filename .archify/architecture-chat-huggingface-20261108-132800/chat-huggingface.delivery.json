@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "d417df22-3232-47bc-a643-47e63bbb1128",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\architecture-chat-huggingface-20261108-132800\\candidate.json",
+  "output": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\architecture-chat-huggingface-20261108-132800\\chat-huggingface.html",
+  "specification": {
+    "sha256": "29c1c5c938513cb41e883e3850f16b6673fbaed938e5b0fd6ee7dbc0d37e9531",
+    "bytes": 6953
+  },
+  "artifact": {
+    "sha256": "d5553adbf524ea75f118c83b8a4ead19c39cdb23f1f7f551bf6502155ad6088f",
+    "bytes": 851556
+  }
+}

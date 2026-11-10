@@ -1,0 +1,233 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Ingest, route, and session memory",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "output": ".archify/workflow-ingest-session-memory-20261108-075300/ingest-session-memory.html",
+    "repository": {
+      "url": "https://github.com/juan-aguilera/SEDI_TG.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "3f7b34607f1c5041c8fda19ed7d79c568f6fc182"
+    }
+  },
+  "lanes": [
+    { "id": "client", "label": "Client" },
+    { "id": "graph", "label": "StateGraph" },
+    { "id": "retrieval", "label": "Retrieval" },
+    { "id": "memory", "label": "Session stores" }
+  ],
+  "phases": [
+    { "id": "record", "label": "Record the turn", "fromCol": 0, "toCol": 1 },
+    { "id": "route", "label": "Conditional edge", "fromCol": 2, "toCol": 2, "variant": "emphasis" },
+    { "id": "continue", "label": "Rewrite, retrieve, or answer", "fromCol": 3, "toCol": 5 }
+  ],
+  "groups": [
+    {
+      "id": "rewrite_step",
+      "label": "Rewrite or copy",
+      "lane": "retrieval",
+      "fromCol": 3,
+      "toCol": 3,
+      "variant": "emphasis"
+    }
+  ],
+  "mainPath": ["client", "ingest", "route", "generate"],
+  "semanticChecks": {
+    "allowedRoots": ["client", "checkpointer"],
+    "allowedTerminals": ["generate", "sessions"],
+    "requiredEdges": [
+      { "from": "client", "to": "ingest" },
+      { "from": "ingest", "to": "route" },
+      { "from": "route", "to": "rewrite_vector" },
+      { "from": "route", "to": "rewrite_graph" },
+      { "from": "route", "to": "generate" }
+    ],
+    "requiredPaths": [
+      { "from": "client", "to": "generate" },
+      { "from": "checkpointer", "to": "route" },
+      { "from": "rewrite_vector", "to": "generate" },
+      { "from": "rewrite_graph", "to": "generate" }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "client",
+      "lane": "client",
+      "col": 0,
+      "type": "frontend",
+      "label": "Client",
+      "sublabel": "current question only",
+      "icon": "person",
+      "sources": [
+        { "path": "Frontend/api/server.py", "line": 162, "end_line": 168, "label": "invoke sends question" },
+        { "path": "Frontend/api/server.py", "line": 107, "end_line": 113, "label": "body is the question" }
+      ]
+    },
+    {
+      "id": "ingest",
+      "lane": "graph",
+      "col": 1,
+      "type": "backend",
+      "label": "ingest",
+      "sublabel": "append HumanMessage",
+      "icon": "start",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 239, "end_line": 240, "label": "returns the human message" },
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 52, "end_line": 54, "label": "entry before routing" },
+        { "path": "Pipeline_RAG/Graph/state.py", "line": 30, "end_line": 30, "label": "messages accumulate" }
+      ]
+    },
+    {
+      "id": "route",
+      "lane": "graph",
+      "col": 2,
+      "type": "backend",
+      "label": "route_question",
+      "sublabel": "names the next node",
+      "tag": "no state write",
+      "icon": "decision",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 18, "end_line": 33, "label": "three return values" },
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 55, "end_line": 62, "label": "conditional edge" },
+        { "path": "Pipeline_RAG/Chains/router.py", "line": 48, "end_line": 53, "label": "chat only if digest has the field" }
+      ]
+    },
+    {
+      "id": "rewrite_vector",
+      "lane": "retrieval",
+      "col": 3,
+      "type": "backend",
+      "label": "rewrite_vector",
+      "sublabel": "copy if no prior turns",
+      "yOffset": -78,
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 243, "end_line": 260, "label": "copy or rewrite" },
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 44, "end_line": 70, "label": "same rewrite, then vector path" },
+        { "path": "Pipeline_RAG/Tools/session_memory.py", "line": 35, "end_line": 72, "label": "last 8 and digest" }
+      ]
+    },
+    {
+      "id": "rewrite_graph",
+      "lane": "retrieval",
+      "col": 3,
+      "type": "backend",
+      "label": "rewrite_graph",
+      "sublabel": "resolve first to an id",
+      "yOffset": 78,
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 243, "end_line": 260, "label": "shared rewrite function" },
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 40, "end_line": 80, "label": "graph path after rewrite" },
+        { "path": "Pipeline_RAG/Tools/session_memory.py", "line": 5, "end_line": 32, "label": "keep ids, drop embeddings" }
+      ]
+    },
+    {
+      "id": "neo4j",
+      "lane": "retrieval",
+      "col": 4,
+      "type": "database",
+      "label": "Neo4j",
+      "sublabel": "vector or Cypher rows",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 127, "end_line": 148, "label": "vector search writes documents" },
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 165, "end_line": 181, "label": "graph QA writes documents" },
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 70, "end_line": 81, "label": "both paths reach generate" }
+      ]
+    },
+    {
+      "id": "generate",
+      "lane": "graph",
+      "col": 5,
+      "type": "backend",
+      "label": "generate",
+      "sublabel": "history without this turn",
+      "icon": "success",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/nodes.py", "line": 224, "end_line": 235, "label": "answer plus AIMessage" },
+        { "path": "Pipeline_RAG/Tools/session_memory.py", "line": 155, "end_line": 168, "label": "drop the current human" },
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 74, "end_line": 81, "label": "retrieval and chat both end here" }
+      ]
+    },
+    {
+      "id": "checkpointer",
+      "lane": "memory",
+      "col": 2,
+      "type": "database",
+      "label": "Checkpointer",
+      "sublabel": "snapshot by thread_id",
+      "tag": "RAM or SQLite",
+      "sources": [
+        { "path": "Pipeline_RAG/Graph/graph.py", "line": 83, "end_line": 89, "label": "MemorySaver or injected saver" },
+        { "path": "Frontend/api/server.py", "line": 162, "end_line": 168, "label": "thread_id is the session" },
+        { "path": "Frontend/api/server.py", "line": 268, "end_line": 284, "label": "frontend SqliteSaver" }
+      ]
+    },
+    {
+      "id": "sessions",
+      "lane": "memory",
+      "col": 0,
+      "type": "database",
+      "label": "Chat title",
+      "sublabel": "not in the checkpointer",
+      "sources": [
+        { "path": "Frontend/api/sessions_store.py", "line": 1, "end_line": 7, "label": "title lives apart" },
+        { "path": "Frontend/api/server.py", "line": 89, "end_line": 93, "label": "delete drops the thread" },
+        { "path": "Frontend/api/server.py", "line": 126, "end_line": 129, "label": "first question names the chat" }
+      ]
+    }
+  ],
+  "edges": [
+    { "id": "ask", "from": "client", "to": "ingest", "label": "question only", "variant": "emphasis", "role": "main" },
+    { "id": "to-route", "from": "ingest", "to": "route", "label": "conditional", "variant": "emphasis", "role": "main" },
+    { "id": "to-chat", "from": "route", "to": "generate", "label": "chat", "variant": "emphasis", "role": "main" },
+    { "id": "to-vector", "from": "route", "to": "rewrite_vector", "label": "vector search", "variant": "default", "role": "branch" },
+    { "id": "to-graph", "from": "route", "to": "rewrite_graph", "label": "graph query", "variant": "default", "role": "branch" },
+    { "id": "vector-query", "from": "rewrite_vector", "to": "neo4j", "label": "then retrieve", "variant": "default" },
+    { "id": "graph-query", "from": "rewrite_graph", "to": "neo4j", "label": "then retrieve", "variant": "default" },
+    { "id": "rows", "from": "neo4j", "to": "generate", "label": "documents", "variant": "emphasis" },
+    { "id": "restore", "from": "checkpointer", "to": "route", "label": "last 8 + digest", "variant": "dashed" },
+    { "id": "restore-vector", "from": "checkpointer", "to": "rewrite_vector", "label": "history + digest", "variant": "dashed" },
+    { "id": "restore-graph", "from": "checkpointer", "to": "rewrite_graph", "label": "history + digest", "variant": "dashed" },
+    { "id": "title", "from": "client", "to": "sessions", "label": "display name", "variant": "dashed", "role": "branch" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "What ingest does",
+      "items": [
+        "Appends this turn to messages, alternating human and model roles.",
+        "It does not query Neo4j, rewrite, or classify the question.",
+        "route_question only chooses rewrite_vector, rewrite_graph, or generate."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Where memory lives",
+      "items": [
+        "The notebook uses MemorySaver in RAM. The frontend uses SqliteSaver and a thread_id.",
+        "The same id restores messages and documents across turns and restarts.",
+        "The client does not resend documents. Deleting a chat deletes the thread. The title is a separate SQLite row."
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Router and rewrite window",
+      "items": [
+        "They see the last eight messages as role and text, plus a digest of ids, names, and counts ranked from 1.",
+        "Embeddings and descriptions are left out. “The first one” resolves to a model_id in that digest.",
+        "Chat is chosen only when the asked field is already there. An empty history is never chat. With no prior turns, rewrite copies the question."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Anchors, not the graph",
+      "items": [
+        "generate reads earlier turns and does not repeat the human message just appended.",
+        "After retrieval, state holds the question, the rows, and the next follow-up such as “Explain the first one.”",
+        "Image-generation models are Hub entities in those rows. This layer does not replace Neo4j."
+      ]
+    }
+  ]
+}

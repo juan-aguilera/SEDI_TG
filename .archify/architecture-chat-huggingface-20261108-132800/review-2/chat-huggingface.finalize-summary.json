@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\architecture-chat-huggingface-20261108-132800\\candidate.json",
+    "sha256": "29c1c5c938513cb41e883e3850f16b6673fbaed938e5b0fd6ee7dbc0d37e9531",
+    "bytes": 6953
+  },
+  "artifact": {
+    "path": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\architecture-chat-huggingface-20261108-132800\\chat-huggingface.html",
+    "sha256": "d5553adbf524ea75f118c83b8a4ead19c39cdb23f1f7f551bf6502155ad6088f",
+    "bytes": 851556
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\architecture-chat-huggingface-20261108-132800\\review-2\\chat-huggingface.finalize.json",
+    "summaryReceipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\architecture-chat-huggingface-20261108-132800\\review-2\\chat-huggingface.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\architecture-chat-huggingface-20261108-132800\\review-2\\chat-huggingface.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-08T12:59:01.842Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 4846,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

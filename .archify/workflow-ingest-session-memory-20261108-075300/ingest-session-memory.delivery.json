@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "68e89297-d820-47a5-afca-c2badc589119",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-075300\\candidate.json",
+  "output": "C:\\Users\\LSCOLOMBIA\\OneDrive - LS Cable\\BACKUP\\TG\\CODIGO_TG\\files\\.archify\\workflow-ingest-session-memory-20261108-075300\\ingest-session-memory.html",
+  "specification": {
+    "sha256": "5c611dadd53c12ae0f271969ecbf173c339218229215eb3fc31e375403116027",
+    "bytes": 10237
+  },
+  "artifact": {
+    "sha256": "7b0989975e016bba41ef1a5649783504c1dbf3b0e38c0c552ac8b72ca5449583",
+    "bytes": 855634
+  }
+}
